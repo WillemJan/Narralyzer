@@ -13,6 +13,8 @@
 #
 # Or leave a ping here: https://www.github.com/WillemJan/Narralyzer
 #
+# Goal of this install procedure is to get && install && config tools/language models needed.
+#
 
 # Narralyzer config util,
 # all (global) variables should be defined in the conf/conf.ini file.
@@ -70,19 +72,28 @@ function fetch_stanford_core {
     fi
 }
 
+# Moves the retrieved classifiers
+# into there respective lang dir.
+function move_classifiers_inplace {
+    for lang in $($CONFIG supported_languages | xargs);do
+        target_path=$(./narralyzer/config.py stanford_ner_path)
+        src=$(find ./stanford/models -name $($CONFIG "lang_"$lang"_stanford_ner") -type f)
+        checksum=$(md5sum $src)
+        target=$target_path"/"$lang"/"$checksum
+        inform_user "Moving classiefer $src to $target"
+    done
+}
+
 # Fetch and unpack the language models.
 function fetch_stanford_lang_models {
     for lang in $($CONFIG supported_languages | xargs);do
         get_if_not_there $($CONFIG "lang_"$lang"_stanford_ner_source")
     done
     find . -name \*.jar -exec unzip -q -o '{}' ';'
-    # TODO: Use config.py to md5sum the models,
-    # and move them to the proper dir,
-    # delete the rest of unpacked files.
 }
 
 # Check if Python2.7 is installed on the os,
-# we might need that in the near futute.
+# we might need that in the near future.
 is_python2_7_avail() {
     is_avail=$(which python2.7 | wc -l)
     if [ "$is_avail" = "0" ]; then
@@ -102,7 +113,7 @@ is_virtualenv_avail() {
     inform_user "Virtualenv is available."
 }
 
-# Now move to install dir for installation of core and models.
+# Create directory stanford if not exists.
 if [ ! -d 'stanford' ]; then
     mkdir stanford
 fi
@@ -127,6 +138,13 @@ if [ ! -d 'stanford/models' ]; then
     cd ../..
 else
     inform_user "Not fetching stanford language models, allready there."
+fi
+
+stanford_ner_path=$($CONFIG stanford_ner_path)
+echo $stanford_ner_path
+if [ ! -d $stanford_ner_path ]; then
+    mkdir -p $stanford_ner_path
+    move_classifiers_inplace
 fi
 
 # Check if the virtual env exists, if not, create one and within
