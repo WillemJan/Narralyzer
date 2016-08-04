@@ -72,8 +72,8 @@ function fetch_stanford_core {
     fi
 }
 
-# Moves the retrieved classifiers
-# into there respective lang dir.
+# Moves the retrieved classifiers into there respective lang dir, 
+# and generate md5sum usefull for reference later.
 function move_classifiers_inplace {
     for lang in $($CONFIG supported_languages | xargs);do
         target_path=$(./narralyzer/config.py stanford_ner_path)
@@ -81,6 +81,7 @@ function move_classifiers_inplace {
         checksum=$(md5sum $src)
         target=$target_path"/"$lang"/"$checksum
         inform_user "Moving classiefer $src to $target"
+        mv $src $target
     done
 }
 
