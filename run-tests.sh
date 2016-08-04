@@ -7,6 +7,11 @@
 # see: http://github.com/WillemJan/Narralyzer
 #
 
+# Fix *.sh files first, then turn on Travis again
+exit
+
+
+
 # Little wrapper to datestamp outgoing messages.
 function inform_user() {
     msg="$1"

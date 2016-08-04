@@ -7,6 +7,10 @@
 # see: http://github.com/WillemJan/Narralyzer
 #
 
+# Fix *.sh files first, then turn on Travis again
+exit
+
+
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

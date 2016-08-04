@@ -1,13 +1,11 @@
 #!/usr/bin/env bash
 
-# Fix *.sh files first, then turn on Travis again
-exit
-
 #
 # File: install.sh
 #
 # This file is part of the Narralyzer package.
 # see: http://github.com/WillemJan/Narralyzer
+#
 
 # If you run into troubles try this: 
 # 
@@ -16,19 +14,9 @@ exit
 # Or leave a ping here: https://www.github.com/WillemJan/Narralyzer
 #
 
-CONFIG="./narralyzer/config.py"
-
-# Tika will take care of most input document conversion.
-TIKA=$($CONFIG tika)
-
-# Where Stanford core lives.
-STANFORD_CORE=$($CONFIG stanford_core)
-
-# Where the language models live.
-STANFORD_DE="http://nlp.stanford.edu/software/stanford-german-2016-01-19-models.jar"
-STANFORD_EN="http://nlp.stanford.edu/software/stanford-english-corenlp-2016-01-10-models.jar"
-STANFORD_NL="https://raw.githubusercontent.com/WillemJan/Narralyzer_Dutch_languagemodel/master/dutch.crf.gz"
-STANFORD_SP="http://nlp.stanford.edu/software/stanford-spanish-corenlp-2015-10-14-models.jar"
+# Narralyzer config util,
+# all (global) variables should be defined in the conf/conf.ini file.
+CONFIG=$(./narralyzer/config.py self)
 
 # Little wrapper to datestamp outgoing messages.
 function inform_user() {
@@ -38,47 +26,59 @@ function inform_user() {
 }
 
 # Fetch the given URL, and save to disk
-# use the 'basename' for storing.
+# use the 'basename' for storing,
+# retry a couple of times before failing.
 function get_if_not_there () {
     URL=$1
-    retries=10
-    not_done=true
+    retries=4
+    not_done="true"
     if [ ! -f $(basename $URL) ]; then
-        while not_done; do
+        while [ $not_done == "true" ]; do
            inform_user "Fetching $URL..."
            wget_output=$(wget -q "$URL")
            if [ $? -ne 0 ]; then
-               inform_user "Error while fetching $URL, $retries left."
+               # If downloading fails, try again.
                retries=$(($retries - 1))
+               if [ $retries == 0 ]; then
+                   $(wget -q "$URL")
+                   inform_user "Error while fetching $URL, no retries left."
+                   exit -1
+               else
+                   inform_user "Error while fetching $URL, $retries left."
+                   sleep 1
+               fi
            else
-               not_done=false
+               # Else leave the loop.
+               not_done="false"
            fi
         done
     else
         inform_user "Not fetching $URL, file allready there."
     fi
-
 }
 
 # Fetch and unpack the Stanford core package.
 function fetch_stanford_core {
+    STANFORD_CORE=$($CONFIG stanford_core)
     get_if_not_there $STANFORD_CORE
     if [ -f $(basename $STANFORD_CORE) ]; then
         unzip -q -n $(basename "$STANFORD_CORE")
+        # Remove the download package aferwards.
         rm $(basename "$STANFORD_CORE")
+        # TODO: fix next line
         ln -s $(find -name \*full\* -type d) core
     fi
 }
 
 # Fetch and unpack the language models.
-# (Might move them into this repo for ease later).
 function fetch_stanford_lang_models {
-    get_if_not_there $STANFORD_DE 
-    get_if_not_there $STANFORD_EN 
-    get_if_not_there $STANFORD_NL
-    get_if_not_there $STANFORD_SP
+    for lang in $($CONFIG supported_languages | xargs);do
+        get_if_not_there $($CONFIG "lang_"$lang"_stanford_ner_source")
+    done
     find . -name \*.jar -exec unzip -q -o '{}' ';'
-    # rm *.jar <- Save some diskspace here.
+    # TODO: Use config.py to md5sum the models,
+    # and move them to the proper dir,
+    # delete the rest of unpacked files.
 }
 
 # Check if Python2.7 is installed on the os,
@@ -104,31 +104,30 @@ is_virtualenv_avail() {
 
 # Now move to install dir for installation of core and models.
 if [ ! -d 'stanford' ]; then
-    mkdir stanford && cd stanford
-else
-    cd stanford
+    mkdir stanford
 fi
 
-    # If stanford-corenlp-full*.zip is allready there, do nothing.
-    full=$(find -name \*full\* | wc -l)
-    if [ "$full" = "0" ];then
-        # Fetch stanford-core from their site,
-        # and install it.
-        fetch_stanford_core
-    else
-        inform_user "Not fetching stanford-core, allready there."
-    fi
+# If stanford-corenlp-full*.zip is allready there, do nothing.
+full=$(find ./stanford/ -name \*full\* | wc -l)
+if [ "$full" = "0" ];then
+    # Fetch stanford-core from their site,
+    # and install it.
+    cd stanford
+    fetch_stanford_core
+    cd ..
+else
+    inform_user "Not fetching stanford-core, allready there."
+fi
 
-    # If the models are allready there, do nothing.
-    if [ ! -d 'models' ]; then
-        # Else fetch and unpack models.
-        mkdir models && cd models
-        fetch_stanford_lang_models
-        cd ..
-    fi
-
-# Now leave the install dir.
-cd ..
+# If the models are allready there, do nothing.
+if [ ! -d 'stanford/models' ]; then
+    # Else fetch and unpack models.
+    mkdir -p stanford/models && cd stanford/models
+    fetch_stanford_lang_models
+    cd ../..
+else
+    inform_user "Not fetching stanford language models, allready there."
+fi
 
 # Check if the virtual env exists, if not, create one and within
 # the virtual env install the required packages.
@@ -139,7 +138,7 @@ if [ ! -d "env" ]; then
     inform_user "Creating new virtualenv using python2.7 in ./env"
     virtualenv -p python2.7 ./env
 
-    inform_user "Entering virtualenv, to leave: deactivate"
+    inform_user "Entering virtualenv, to leave: deactivate."
     source env/bin/activate
 
     inform_user "Upgrade pip and setuptools to latest version."
@@ -159,6 +158,8 @@ if [ ! -d "env" ]; then
 fi
 
 #if [ ! -d 'tika' ]; then
+# Tika will take care of most input document conversion.
+#TIKA=$($CONFIG tika)
 #    mkdir tika && cd tika
 #    get_if_not_there $TIKA
 #    unzip -q -n basename "$TIKA"

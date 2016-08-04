@@ -40,6 +40,7 @@ class Config():
         'config_file': 'conf/config.ini',
         'models': None,
         'root': None,
+        'self': path.abspath(__file__),
         'supported_languages': [],
         'version': '0.1',
     }
@@ -95,17 +96,17 @@ class Config():
         # the config dictionary.
         self.config['models'] = {}
         for section in config.sections():
-            if section.startswith('lang_'):
-                language = section.replace('lang_', '')
-                port = config.get(section, 'port')
-                ner = config.get(section, 'stanford_ner')
-                ner_source = config.get(section, 'stanford_ner_source')
 
-                self.config['models'][language] = {
-                        'port': port,
-                        'stanford_ner': ner,
-                        'stanford_ner_source': ner_source,
+            if section.startswith('lang_'):
+                language_3166 = section.replace('lang_', '')
+                self.config['models'][language_3166] = {
+                            'language_3166' : language_3166
                 }
+
+                for val in config.items(section):
+                    if val[0] not in self.config['models'][language_3166]:
+                        self.config['models'][language_3166][val[0]] = val[1]
+
             if section == 'main':
                 for key in config.items(section):
                     self.config[key[0]] = key[1]
@@ -115,29 +116,49 @@ class Config():
                 self.config["supported_languages"].append(language)
 
     def get(self, variable):
-        trump_was_here = False
+        # If enduser wants caps.
+        end_users_wants_uppercase = False
         if variable.isupper():
             variable = variable.lower()
-            trump_was_here = True
+            # Give him or her caps!
+            end_users_wants_uppercase = True
 
         result = self.config.get(variable, None)
-        if isinstance(result, list):
-            if trump_was_here:
-                return " ".join(sorted(result)).upper()
-            else:
-                return " ".join(sorted(result))
+        if variable.startswith('lang_'):
+            # Special case for the language modes.
+            result = self.config.get('models', None)
 
-        if not isinstance(result, str):
+        # If the requested config variable was not found, exit.
+        if not isinstance(result, (str, dict, list)):
             return None
 
-        elif trump_was_here:
+        # Parse the 'models', into lang_en_stanford_port: 9991 fashion.
+        if isinstance(result, dict):
+            for language_3166 in result:
+                if not isinstance(result, dict):
+                    continue
+                for key in result.get(language_3166):
+                    key_name = "lang_{0}_{1}".format(language_3166, key)
+                    if key_name == variable:
+                        result = result.get(language_3166).get(key)
+                        break
+            if not isinstance(result, str):
+                return None
+
+        # Lists will be displayed with spaces in between
+        if isinstance(result, list):
+            result = " ".join(sorted(result))
+
+        # Make a wish come true
+        if end_users_wants_uppercase:
             return result.upper()
         return result
 
     def __repr__(self):
         current_config = ""
         for item in sorted(self.config):
-            current_config += "\n\t{0}: {1}".format(item, self.get(item))
+            if not self.get(item) is None:
+                current_config += "\n\t{0}: {1}".format(item, self.get(item))
         result = "Available config parameters:\n\t{0}".format(
                 current_config.strip())
         return result
