@@ -1,0 +1,17 @@
+{% extends "main.html" %}
+{% block body %}
+
+<p>This tool will help you quickly analyze a narrative.</p>
+<p>By looking at the structure of the text, and the main actors in the text, this tool can help you gain insight in the dialog structure..blah blah enzo  :) </p>
+<p>Please note the following guidlines for optimal usage of this tool: 
+<ul>
+  <li>Chapters in the text should be classified as such.
+  <li>Text must be either in Dutch or English (Due to available NER-engines).
+</ul>
+(Wellicht moet er eerst een intro pagina voordat we meteen beginnen met uploaden..)<br>
+<form action="" method=post enctype=multipart/form-data id="uploadform">
+  <p>Select 'Browse' to select a file to upload, next press 'Upload' to commence the uploading.<br>
+  <p><input type=file name=file> <input type=submit value=Upload>
+</form>
+
+{% endblock %}

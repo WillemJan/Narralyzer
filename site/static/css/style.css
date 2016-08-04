@@ -1,0 +1,80 @@
+* { 
+  margin: 0px 0px 0px 0px; 
+  padding: 0px 0px 0px 0px;
+}
+
+body {
+  background-color: #FFF;
+  color: #000;
+  font-family: Arial,Helvetica,sans-serif,Verdana;
+  font-size: small;
+}
+
+#uploadform {
+  border: 1px solid #000;
+  padding: 20px;
+  width: 300px;
+}
+
+.chapter {
+  border: 1px solid #000;
+  margin: 10px;
+  height: 200px;
+  overflow: auto;
+  padding: 5px;
+  width: 70%;
+}
+
+h1 {
+  text-align: left;
+  margin-left: 40%;
+  padding-top: 30px;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 40px;
+}
+
+h2 {
+  text-align: left;
+  margin-left: 35%;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 20px;
+  font-style: italic;
+}
+
+
+hr {
+  color: lightblue;
+  float: left;
+  width: 40%;
+}
+
+.header {
+  background: #CACFCA;
+  height: 120px;
+}
+
+.chapter_selected p {
+    background-color: #328832;
+    margin-top: 20px;
+    margin-left: 100px;
+    overflow: auto;
+    height: 100px;
+    width: 800px;
+}
+
+#header_logo_ru {
+    padding-top: 5px;
+    float: right;
+    clear: both;
+    width: 200px;
+}
+
+#header_logo_kb {
+    padding-top: 20px;
+    float: right;
+    width: 200px;
+}
+
+input[type="radio"] {
+    margin-left: 15px;
+}

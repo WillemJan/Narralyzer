@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Narralyzer-1</title>
+    <link rel="stylesheet" type="text/css" href="static/css/style.css">
+    <script src="static/js/jquery/jquery.js"></script>
+    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro' rel='stylesheet' type='text/css'>
+  </head>
+
+  <body>
+    <h1>Narralyzer</h1>
+
+    <hr></br>
+
+    Revieved and parsed:<b>{{ filename }}</b><br>
+    Recieved file at: <b>{{ datetime }}</b><br><br>
+    Recieved file is of type: <b>{{ ftype }}</b><br>
+    Original filesize (absolute): <b>{{ filesize }}</b><br>
+
+    <ul>
+        <li>Nr of ascii characters [a-zA-Z0-9] : <b>{{ t_ascii_letters }}</b>
+        <li>    Nr of punctuation characters [!"#$%&amp;\'()*+,-./:;<=>?@[\\]^_`{|}~] :<b>{{ t_punct_letters }}</b>
+        <li>    Nr of noise char [everything not above] : <b>{{ t_noise_letters }}</b>
+    </ul>
+
+    <hr>
+
+    </br>
+    The following information was dectected automaticly, this is your last change to change it before we start the final analysis.</br>
+    (of cource you can re-upload and see what happens if you play arround with the structure of the chapters.)
+
+    <form>
+        <p>Author: <b>{{ narrative.author }}</b></p>
+        <p>Title: <b>{{ narrative.title }}</b></p>
+
+        <legend>Language for analysis: </legend>
+        {% if narrative.lang == 'nl' %}
+            <input type="radio" name="lang" value="nl" checked>nl</br>
+            <input type="radio" name="lang" value="en">en</br>
+        {% else %}
+            <input type="radio" name="lang" value="nl">nl</br>
+            <input type="radio" name="lang" value="en" checked>en</br>
+        {% endif %}
+
+        </b>
+        <hr></br><br>
+        Please select the chapters that you want to include in the analysis.</br>
+        Currently selected <b>(X/{{ narrative.nr_of_chapters }})</b> chapters.</br></br>
+
+
+        {% for i in range(0,narrative.nr_of_chapters) %}
+
+        <label class='chapter_select' for="chapter{{ i }}"><b>Chapter {{ i }} {{ narrative.titles[i] }}</b></label>
+        <input type='checkbox' name="chapter{{ i }}" id="chapter{{ i }}" class='chapter_select' checked></input></br>
+        <div class='chapter_selected' id="chapter_{{ i }}" style='display: block none' id="chapter_{{ i }}_text">
+            <h2>{{ narrative.titles[i] }}</h2>
+            <p><span>{{ narrative.chapters[i].replace('\n', '</br>') | safe }}</span</p></div>
+          </div>
+         <script>
+           var nr_chapters = {{ i }};
+         </script>
+        {% endfor %}
+    <br/>
+    <label for="go">Start analysis</label>
+    <input type='submit' value="go" id='go'>
+    </form>
+    
+    <script src="static/js/narralyzer.js"></script>
+
+  </body>
+</html>
