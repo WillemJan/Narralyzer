@@ -11,7 +11,7 @@ notifications:
     on_failure: always
 before_install:
     - sudo apt-get -qq update
-    - sudo apt-get install -y libxml2-dev libdb-dev python2.7 python-pip python-virtualenv imagemagick jp2a duc
+    - sudo apt-get install -y libxml2-dev libdb-dev python2.7 python-pip python-virtualenv imagemagick jp2a
 install:
   - bash install.sh
 script:
