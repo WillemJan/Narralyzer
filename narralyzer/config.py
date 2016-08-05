@@ -61,7 +61,7 @@ class Config():
 
         # Initialize the logger with the name of this class.
         if self.logger is None:
-            self.logger = logger(self.__class__.__name__, 'debug')
+            self.logger = logger(self.__class__.__name__, 'info')
             self.logger.debug("Assuming root: {0}".format(root))
 
         # Set the path to the config-file (config.ini).
