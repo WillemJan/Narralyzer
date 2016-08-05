@@ -21,7 +21,6 @@
 # all (global) variables should be defined in the conf/conf.ini file.
 CONFIG=$(./narralyzer/config.py self)
 
-
 #------------------------------------------------
 # Functions
 #------------------------------------------------
@@ -134,7 +133,6 @@ is_virtualenv_avail() {
     inform_user "Virtualenv is available."
 }
 
-
 #--------------------------------------------------------
 # /Functions
 #-------------------------------------------------------
@@ -200,16 +198,13 @@ if [ ! -d "env" ]; then
     inform_user "Upgrade pip and setuptools to latest version."
     pip install --upgrade pip setuptools
 
-    if [ -f ~/requirements.txt ]; then
-        req="~/requirements.txt"
-    else
-        req=$(find ~ -name 'requirements.txt'  | grep '/Narralyzer/')
-    fi
-
+    req=$($CONFIG root"/requirements.txt")
     if [ -f "$req" ]; then
-        inform_user "Installing the following packages."
+        inform_user "Running pip -r $req"
         cat "$req"
-        pip install -r "$req"
+        pip install -r "$req" || airbag "Something went wrong while installing the required python packages."
+    elif
+        airbag "Could not find requirements.txt in $req"
     fi
 fi
 
