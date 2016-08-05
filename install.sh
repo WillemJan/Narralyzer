@@ -95,7 +95,7 @@ function move_classifiers_inplace {
             mkdir -p $target_path || airbag "Could not create directory: $target_path" $LINENO
             inform_user "Created directory: $target_path"
         fi
-        src="$($CONFIG root)$(find stanford/models -name $($CONFIG "lang_"$lang"_stanford_ner") -type f || airbag "Could not find model for $lang." $LINENO)"
+        src="$($CONFIG root)"/"$(find stanford/models -name $($CONFIG "lang_"$lang"_stanford_ner") -type f || airbag "Could not find model for $lang." $LINENO)"
         checksum=$(md5sum -b "$src" | cut -d ' ' -f 1 || airbag "Failed to md5sum $src" $LINENO) 
         target="$target_path"/"$checksum"
         inform_user "Moving classifier $src to $target."
