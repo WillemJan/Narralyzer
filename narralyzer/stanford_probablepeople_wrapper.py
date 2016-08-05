@@ -1,16 +1,14 @@
 #!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 """
-    narralyzer.stanford_ner_wrapper
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Implements tiny wrapper for Stanford CoreNLP NER.
-    Also invokes the awsome powers of probablepeople!
+    narralyzer.stanford_probablepeople_wrapper
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Implements tiny wrapper for Stanford CoreNLP NER,
+    and invokes the awsome powers of probablepeople!
 
     Hint's on setting up a high-preformance NER-farm.
     http://stanfordnlp.github.io/CoreNLP/corenlp-server.html#dedicated-server
-
-    Docs on probablepeople are found here:
-    http://probablepeople.readthedocs.io/
+    Or see the hint's in 'lang_lib.py'.
 
     :copyright: (c) 2016 Koninklijke Bibliotheek, by Willem-Jan Faber.
     :license: GPLv3, see LICENCE.txt for more details.
@@ -24,12 +22,9 @@ import logging
 import lxml.html
 import probablepeople
 import socket
-import sys
 
 from contextlib import contextmanager
 from django.utils.encoding import smart_text
-
-log = logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 
 @contextmanager
@@ -61,8 +56,7 @@ def _tcpip4_socket(host, port):
 
 def stanford_ner_wrapper(text, port=False, use_pp=True, host='localhost'):
     """
-    Standalone function to fetch results from Stanford ner, and appy probablepeople.
-
+    Standalone function to fetch results from Stanford NER, and appy probablepeople.
 
     >>> res = stanford_ner_wrapper("Willem-Alexander (Dutch: [ˈʋɪləm aːlɛkˈsɑndər]; Willem-Alexander Claus George Ferdinand; born 27 April 1967) is the King of the Netherlands.", 9991, True)
     >>> from pprint import pprint;pprint(res)
@@ -216,6 +210,8 @@ def stanford_ner_wrapper(text, port=False, use_pp=True, host='localhost'):
     if use_pp:
         pp = []
         for item in ners:
+            # Loop over the Stanford NER (per/ person) results,
+            # and apply probablepeople, which raises when fails, (so try).
             if "per" in item["tag"].lower():
                 result = {}
                 try:

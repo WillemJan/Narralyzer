@@ -140,10 +140,8 @@ if [ ! -d "$path" ]; then
     mkdir -p "$path" || airbag "Could not create dir $path" $LINENO
 fi
 
-# If stanford-corenlp-full*.zip is allready there, do nothing.
-full=$(find ./stanford/ -name \*full\* | wc -l)
-if [ "$full" = "0" ];then
-    # Fetch stanford-core and install it.
+if [ ! -f $($CONFIG stanford_core_path) ];then
+    # Fetch Stanford-core and install it.
     cd "$path" || airbag "Could not enter directory: $path" $LINENO
     fetch_stanford_core || airbag "Could not fetch stanford core."
     cd ..

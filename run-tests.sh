@@ -25,7 +25,6 @@ function run_test() {
 (
 # Start Stanford-NER (Which will bind tot a socket on localhost)
 # see conf/config.ini
-
 inform_user "Starting Stanford."
 . start_stanford.sh waitforstartup
 

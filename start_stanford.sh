@@ -26,18 +26,12 @@ function inform_user() {
 # /Functions
 #------------------------------------------------
 
-PATH_TO_STANFORD_CORE="stanford/core/"
-inform_user "Changing directory to $PATH_TO_STANFORD_CORE"
-cd $PATH_TO_STANFORD_CORE
-
-# Prefix for logfile output name, to turn logging off
-# change LOG to "/dev/null".
-LOG="stanford_"
+inform_user "Changing directory to $($CONFIG stanford_core)"
+cd $($CONFIG stanford_core)
 
 # Use system wide default java.
 JAVA=$(which java)
 # Except if your hostname "fe2"
-# So this private litte hack is to be ignored.
 if [ $HOSTNAME == "fe2" ]; then
     JAVA=/home/aloha/java/bin/java
 fi
@@ -58,17 +52,18 @@ else
   scriptdir=$(dirname "$scriptpath")
 fi
 
-# Fire several stanford core server.
+# Start several Stanford core servers.
 for lang in $($CONFIG supported_languages | xargs); do
     classifier=$($CONFIG lang_"$lang"_stanford_path)
     port=$($CONFIG lang_"$lang"_stanford_port)
-    is_running=$(ps x | grep "$classifier" | grep -v 'grep' | wc -l)
-    if [ "$is_running" == "1" ]; then
+
+    count=$(lsof -i tcp -n | grep $port | wc -l)
+    if [ "$count" == "1" ]; then
         inform_user "Not starting $lang on port $port for it is allready running."
     else
         inform_user "Starting Stanford-core for language: $lang on port: $port"
         inform_user "$JAVA $JAVA_MEM -Djava.net.preferIPv4Stack=true -cp $scriptdir/\* edu.stanford.nlp.ie.NERServer -port $port -loadClassifier $classifier -outputFormat inlineXML"
-        $JAVA $JAVA_MEM -Djava.net.preferIPv4Stack=true -cp $scriptdir/\* edu.stanford.nlp.ie.NERServer -port $port -loadClassifier $classifier -outputFormat inlineXML 2>&1  &
+        ($JAVA $JAVA_MEM -Djava.net.preferIPv4Stack=true -cp $scriptdir/\* edu.stanford.nlp.ie.NERServer -port $port -loadClassifier $classifier -outputFormat inlineXML 2>&1) > /dev/null  &
     fi
 done
 

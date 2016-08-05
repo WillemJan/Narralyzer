@@ -22,7 +22,7 @@ from langdetect import detect
 from numpy import mean
 from Queue import Queue
 from segtok.segmenter import split_multi
-from stanford_ner_wrapper import stanford_ner_wrapper
+from stanford_probablepeople_wrapper import stanford_probablepeople_wrapper
 from threading import Thread
 
 try:
@@ -307,9 +307,9 @@ class Language:
         if self.sentiment_avail:
             result["sentiment"] = self._pattern_sentiment(sentence)
 
-        result["stanford"] = stanford_ner_wrapper(sentence,
-                                                  port=self.stanford_port,
-                                                  use_pp=True)
+        res = stanford_probablepeople_wrapper(sentence,
+                                              port=self.config.get('models').get(self.lang).get('port')
+                                              use_pp=True)
 
         pos = []
         for word, pos_tag in self._pattern_tag(sentence):

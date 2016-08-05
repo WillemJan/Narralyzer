@@ -109,7 +109,7 @@ def narralyze(input_text, output_name=False, return_json=True, verbose=True):
     '''
 
 if __name__ == "__main__":
-    print("Relativity theory")
+    print("https://www.youtube.com/watch?v=SIIzl-bNtg0")
     #if len(sys.argv) >= 2 and 'test' in " ".join(sys.argv):
     #    import doctest
     #    doctest.testmod(verbose=True)
