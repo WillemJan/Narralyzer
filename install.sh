@@ -87,9 +87,7 @@ function fetch_stanford_core {
 function move_classifiers_inplace {
     for lang in $($CONFIG supported_languages | xargs); do
         target_path=$($CONFIG root)
-        echo "LANG: $lang"
-        echo "target_path: $target_path"
-        target_path="$target_path$($CONFIG stanford_ner_path)"/"$lang"
+        target_path="$target_path"/"$($CONFIG stanford_ner_path)"/"$lang"
         echo "target_path: $target_path"
         if [ ! -d $target_path ]; then
             mkdir -p $target_path || airbag "Could not create directory: $target_path" $LINENO

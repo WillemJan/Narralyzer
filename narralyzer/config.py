@@ -142,6 +142,7 @@ class Config():
                         ner_path = self.config.get('stanford_ner_path')
                         ner_path = path.join(self.config.get('root'), ner_path, language_3166)
                         result = listdir(ner_path)[0]
+                        result = path.join(ner_path, result)
             else:
                 for language_3166 in result:
                     if not isinstance(result, dict):
