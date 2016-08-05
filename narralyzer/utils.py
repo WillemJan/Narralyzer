@@ -6,7 +6,7 @@
     Misc utilities to support Narralyzer.
 
     :copyright: (c) 2016 Koninklijke Bibliotheek, by Willem-Jan Faber.
-    :license: GPLv3, see LICENCE.txt for more details.
+    :license: GPLv3, see licence.txt for more details.
 """
 
 import sys

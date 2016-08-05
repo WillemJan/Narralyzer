@@ -8,7 +8,7 @@
     Method: Building on the shoulders of giants.
 
     :copyright: (c) 2016 Koninklijke Bibliotheek, by Willem Jan Faber.
-    :license: GPLv3, see LICENCE.txt for more details.
+    :license: GPLv3, see licence.txt for more details.
 """
 
 import sys
@@ -281,7 +281,7 @@ class Language:
             result["sentiment"] = self._pattern_sentiment(sentence)
 
         res = stanford_probablepeople_wrapper(sentence,
-                                              port=self.config.get('models').get(self.lang).get('port')
+                                              port=self.config.get('models').get(self.lang).get('port'),
                                               use_pp=True)
 
         pos = []
@@ -329,7 +329,7 @@ class Language:
 
     def stats_all(self):
         max_len = min_len = 0  # Min and max sentence length.
-        avg = []  # Caluclate average sentence length.
+        avg = []  # Store all sentence length's.
         for sentence in self.result["sentences"].values():
             # Caluclate the stats per sentence.
             sentence_stats = self.stats_sentence(sentence.get("string"))
@@ -348,133 +348,11 @@ class Language:
 
         # Caluclate the total stats.
         avg_sentence_length = int(round(mean(avg)))
-
         stats = {}
-        stats["avg_length"] = avg_sentence_length
         stats["max"] = max_len
         stats["min"] = min_len
-
+        stats["total_len"] = all
         self.result["stats"] = stats
-
-
-def _test_NL():
-    '''
-    >>> lang = Language("Later gaf Christophorus Columbus in een brief aan Ferdinand en Isabella de opdracht de buit te verstoppen en de haven af te branden. Toen Columbus uit de haven van Tunis voer zag hij de soldaten van Isabella naderen.")
-    Using detected language 'nl' to parse input text.
-    >>> lang.use_threads = False
-    >>> lang.parse()
-    >>> from pprint import pprint
-    >>> pprint (lang.result)
-    {'lang': u'nl',
-     'sentences': {0: {'count': 0,
-                       'pos': [{'string': u'Later', 'tag': u'JJR'},
-                               {'string': u'gaf', 'tag': u'VBD'},
-                               {'string': u'Christophorus', 'tag': u'NNP'},
-                               {'string': u'Columbus', 'tag': u'NNP'},
-                               {'string': u'in', 'tag': u'IN'},
-                               {'string': u'een', 'tag': u'DT'},
-                               {'string': u'brief', 'tag': u'NN'},
-                               {'string': u'aan', 'tag': u'IN'},
-                               {'string': u'Ferdinand', 'tag': u'NNP'},
-                               {'string': u'en', 'tag': u'CC'},
-                               {'string': u'Isabella', 'tag': u'NNP'},
-                               {'string': u'de', 'tag': u'DT'},
-                               {'string': u'opdracht', 'tag': u'NN'},
-                               {'string': u'de', 'tag': u'DT'},
-                               {'string': u'buit', 'tag': u'NN'},
-                               {'string': u'te', 'tag': u'TO'},
-                               {'string': u'verstoppen', 'tag': u'VB'},
-                               {'string': u'en', 'tag': u'CC'},
-                               {'string': u'de', 'tag': u'DT'},
-                               {'string': u'haven', 'tag': u'NN'},
-                               {'string': u'af', 'tag': u'RP'},
-                               {'string': u'te', 'tag': u'TO'},
-                               {'string': u'branden', 'tag': u'VBP'},
-                               {'string': u'.', 'tag': u'.'}],
-                       'sentiment': (0.0, 0.1),
-                       'stanford': {'ners': [{'string': 'Christophorus Columbus',
-                                              'tag': 'per'},
-                                             {'string': 'Ferdinand',
-                                              'tag': 'loc'},
-                                             {'string': 'Isabella',
-                                              'tag': 'per'}],
-                                    'pp': [{'parse': [('Christophorus',
-                                                       'CorporationName'),
-                                                      ('Columbus',
-                                                       'CorporationName')],
-                                            'tag': {'CorporationName': 'Christophorus Columbus'}},
-                                           {'parse': [('Isabella',
-                                                       'GivenName')],
-                                            'tag': {'GivenName': 'Isabella'}}],
-                                    'raw_ners': [{'string': 'Christophorus',
-                                                  'tag': 'b-per'},
-                                                 {'string': 'Columbus',
-                                                  'tag': 'i-per'},
-                                                 {'string': 'Ferdinand',
-                                                  'tag': 'b-loc'},
-                                                 {'string': 'Isabella',
-                                                  'tag': 'b-per'}],
-                                    'raw_response': u'Later gaf <B-PER>Christophorus</B-PER> <I-PER>Columbus</I-PER> in een brief aan <B-LOC>Ferdinand</B-LOC> en <B-PER>Isabella</B-PER> de opdracht de buit te verstoppen en de haven af te branden.'},
-                       'stats': {'ascii_lowercase': 109,
-                                 'count': 132,
-                                 'digits': 0,
-                                 'lowercase': 104,
-                                 'printable': 132,
-                                 'unprintable': 0,
-                                 'uppercase': 5},
-                       'string': u'Later gaf Christophorus Columbus in een brief aan Ferdinand en Isabella de opdracht de buit te verstoppen en de haven af te branden.'},
-                   1: {'count': 1,
-                       'pos': [{'string': u'Toen', 'tag': u'CC'},
-                               {'string': u'Columbus', 'tag': u'NNP'},
-                               {'string': u'uit', 'tag': u'IN'},
-                               {'string': u'de', 'tag': u'DT'},
-                               {'string': u'haven', 'tag': u'NN'},
-                               {'string': u'van', 'tag': u'IN'},
-                               {'string': u'Tunis', 'tag': u'NNP'},
-                               {'string': u'voer', 'tag': u'NN'},
-                               {'string': u'zag', 'tag': u'VBD'},
-                               {'string': u'hij', 'tag': u'PRP'},
-                               {'string': u'de', 'tag': u'DT'},
-                               {'string': u'soldaten', 'tag': u'NNS'},
-                               {'string': u'van', 'tag': u'IN'},
-                               {'string': u'Isabella', 'tag': u'NNP'},
-                               {'string': u'naderen', 'tag': u'VB'},
-                               {'string': u'.', 'tag': u'.'}],
-                       'sentiment': (0.0, 0.0),
-                       'stanford': {'ners': [{'string': 'Columbus',
-                                              'tag': 'per'},
-                                             {'string': 'Tunis', 'tag': 'loc'},
-                                             {'string': 'Isabella',
-                                              'tag': 'per'}],
-                                    'pp': [{'parse': [('Columbus',
-                                                       'GivenName')],
-                                            'tag': {'GivenName': 'Columbus'}},
-                                           {'parse': [('Isabella',
-                                                       'GivenName')],
-                                            'tag': {'GivenName': 'Isabella'}}],
-                                    'raw_ners': [{'string': 'Columbus',
-                                                  'tag': 'b-per'},
-                                                 {'string': 'Tunis',
-                                                  'tag': 'b-loc'},
-                                                 {'string': 'Isabella',
-                                                  'tag': 'b-per'}],
-                                    'raw_response': u'Toen <B-PER>Columbus</B-PER> uit de haven van <B-LOC>Tunis</B-LOC> voer zag hij de soldaten van <B-PER>Isabella</B-PER> naderen.'},
-                       'stats': {'ascii_lowercase': 68,
-                                 'count': 83,
-                                 'digits': 0,
-                                 'lowercase': 64,
-                                 'printable': 83,
-                                 'unprintable': 0,
-                                 'uppercase': 4},
-                       'string': u'Toen Columbus uit de haven van Tunis voer zag hij de soldaten van Isabella naderen.'}},
-     'stats': {'avg_length': 108, 'max': 132, 'min': 83},
-     'text': 'Later gaf Christophorus Columbus in een brief aan Ferdinand en Isabella de opdracht de buit te verstoppen en de haven af te branden. Toen Columbus uit de haven van Tunis voer zag hij de soldaten van Isabella naderen.'}
-    '''
-    lang = Language("Later gaf Christophorus Columbus in een brief aan Ferdinand en Isabella de opdracht de buit te verstoppen en de haven af te branden. Toen Columbus uit de haven van Tunis voer zag hij de soldaten van Isabella naderen.", "nl")
-    lang.use_threads = False
-    lang.parse()
-    from pprint import pprint
-    pprint(lang.result)
 
 if __name__ == '__main__':
     if len(sys.argv) >= 2 and "test" in " ".join(sys.argv):

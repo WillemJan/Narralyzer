@@ -7,7 +7,7 @@
     Handle misc config variables.
 
     :copyright: (c) 2016 Koninklijke Bibliotheek, by Willem-Jan Faber.
-    :license: GPLv3, see LICENCE.txt for more details.
+    :license: GPLv3, see licence.txt for more details.
 '''
 
 from os import path, listdir
@@ -25,7 +25,7 @@ except:
 
 class Config():
     """
-    Configuration file dict.
+    Configuration module.
 
     >>> config = Config()
     >>> config.get('supported_languages')
@@ -68,10 +68,13 @@ class Config():
         config_file = path.join(root, self.config.get('config_file'))
         self.config['config_file'] = config_file
 
-        # Read and parse the config file, 
+        # Read and parse the config file,
         # skip if this has been done before.
         if self.config.get('models', None) is None:
             self._parse_config(config_file)
+
+        # Config file was parsable,
+
 
     def _parse_config(self, config_file):
         # Check if the config file at least exists.
@@ -100,7 +103,7 @@ class Config():
             if section.startswith('lang_'):
                 language_3166 = section.replace('lang_', '')
                 self.config['models'][language_3166] = {
-                            'language_3166' : language_3166
+                            'language_3166': language_3166
                 }
 
                 for val in config.items(section):
@@ -135,12 +138,15 @@ class Config():
         # Parse the 'models', into lang_en_stanford_port: 9991 fashion.
         if isinstance(result, dict):
             if variable.endswith('stanford_path'):
-                requested_language = variable.replace('_stanford_path','')
+                requested_language = variable.replace('_stanford_path', '')
                 requested_language = requested_language.replace('lang_', '')
                 for language_3166 in result:
                     if language_3166 == requested_language:
                         ner_path = self.config.get('stanford_ner_path')
-                        ner_path = path.join(self.config.get('root'), ner_path, language_3166)
+                        ner_path = path.join(
+                                self.config.get('root'),
+                                ner_path,
+                                language_3166)
                         result = listdir(ner_path)[0]
                         result = path.join(ner_path, result)
             else:
@@ -158,6 +164,15 @@ class Config():
         # Lists will be displayed with spaces in between
         if isinstance(result, list):
             result = " ".join(sorted(result))
+
+        # If the requested variable is one of the .txt files,
+        # read the file from disk, and return it.
+        if isinstance(result, str):
+            if result.endswith(".txt"):
+                with open(path.join(self.config.get('root'), result)) as fh:
+                    result = ", ".join(
+                            [i.strip() for i in (
+                                fh.read().split('\n')[:4])])[:-1]
 
         # Make a wish come true
         if end_users_wants_uppercase:

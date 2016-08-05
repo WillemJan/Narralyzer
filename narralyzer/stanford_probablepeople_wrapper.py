@@ -11,21 +11,28 @@
     Or see the hint's in 'lang_lib.py'.
 
     :copyright: (c) 2016 Koninklijke Bibliotheek, by Willem-Jan Faber.
-    :license: GPLv3, see LICENCE.txt for more details.
+    :license: GPLv3, see licence.txt for more details.
 """
-
-import sys
-reload(sys)
-sys.setdefaultencoding('utf-8')
 
 import logging
 import lxml.html
-import probablepeople
-import socket
+import sys
+
+reload(sys)
+sys.setdefaultencoding('utf-8')
+
+
+from probablepeople import parse
+from socket import (AF_INET,
+                   error,
+                   SHUT_RDWR,
+                   socket,
+                   SOCK_STREAM)
 
 from contextlib import contextmanager
 from django.utils.encoding import smart_text
 
+log = logging.logger(__name__, 'debug')
 
 @contextmanager
 def _tcpip4_socket(host, port):
@@ -35,7 +42,7 @@ def _tcpip4_socket(host, port):
     and improved on it.
     """
 
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock = socket(AF_INET, SOCK_STREAM)
     sock.settimeout(50)
 
     try:
@@ -43,8 +50,8 @@ def _tcpip4_socket(host, port):
         yield sock
     finally:
         try:
-            sock.shutdown(socket.SHUT_RDWR)
-        except socket.error:
+            sock.shutdown(SHUT_RDWR)
+        except error:
             log.error("Socket error %s %s" % (host, str(port)))
             pass
         except OSError:
@@ -54,116 +61,19 @@ def _tcpip4_socket(host, port):
             sock.close()
 
 
-def stanford_ner_wrapper(text, port=False, use_pp=True, host='localhost'):
+def sppw(text, port=False, use_pp=True, host='localhost'):
     """
-    Standalone function to fetch results from Stanford NER, and appy probablepeople.
+    Standalone function to wrap and combine Stanford NER and probablepeople.
 
-    >>> res = stanford_ner_wrapper("Willem-Alexander (Dutch: [ˈʋɪləm aːlɛkˈsɑndər]; Willem-Alexander Claus George Ferdinand; born 27 April 1967) is the King of the Netherlands.", 9991, True)
+    >>> res = sppw("Willem-Alexander (Dutch: [ˈʋɪləm aːlɛkˈsɑndər]; Willem-Alexander Claus George Ferdinand; born 27 April 1967) is the King of the Netherlands.", 9991)
     >>> from pprint import pprint;pprint(res)
-    {'ners': [{'string': 'Willem-Alexander', 'tag': 'person'},
-              {'string': 'Willem-Alexander Claus George Ferdinand',
-               'tag': 'person'},
-              {'string': 'Netherlands', 'tag': 'location'}],
-     'pp': [{'parse': [('Willem-Alexander', 'GivenName')],
-             'tag': {'GivenName': 'Willem-Alexander'}},
-            {'parse': [('Willem-Alexander', 'CorporationName'),
-                       ('Claus', 'CorporationName'),
-                       ('George', 'CorporationName'),
-                       ('Ferdinand', 'CorporationName')],
-             'tag': {'CorporationName': 'Willem-Alexander Claus George Ferdinand'}}],
-     'raw_ners': [{'string': 'Willem-Alexander', 'tag': 'person'},
-                  {'string': 'Willem-Alexander Claus George Ferdinand',
-                   'tag': 'person'},
-                  {'string': 'Netherlands', 'tag': 'location'}],
-     'raw_response': u'<PERSON>Willem-Alexander</PERSON> (Dutch: [\u02c8\u028b\u026al\u0259m a\u02d0l\u025bk\u02c8s\u0251nd\u0259r]; <PERSON>Willem-Alexander Claus George Ferdinand</PERSON>; born 27 April 1967) is the King of the <LOCATION>Netherlands</LOCATION>.'}
+
+    >>> res = sppw("Prof. Albert Einstein vertoeft op het oogenblik te Londen, en gisteravond was hij in Savoy Hotel eeregast aan een diner, gegeven door de Ort and Oze Societies. De voorzitter van de Engelsche sectie dier Vereeniging is Lord • Rothschild ; de voorzitter van de Duitsche sectie is prof. Einstein.  Lord Rothschild presideerde het diner; aan zijn rechterhand zat de beroemdste geleerde van onzen tyd, aan zijn linkerhand de beroemdste dichter, Bernard Shaw. Rechts van Einstein zat Wells.  Het was een gastmaal voor het intellect en z|jn dames.  Ik wil er geen verslag van geven, maar my bepalen tot enkele aanteekeningen.", 9993, True)
+    >>> from pprint import pprint;pprint(res)
+
     >>> res = stanford_ner_wrapper("Prof. Albert Einstein vertoeft op het oogenblik te Londen, en gisteravond was hij in Savoy Hotel eeregast aan een diner, gegeven door de Ort and Oze Societies. De voorzitter van de Engelsche sectie dier Vereeniging is Lord • Rothschild ; de voorzitter van de Duitsche sectie is prof. Einstein.  Lord Rothschild presideerde het diner; aan zijn rechterhand zat de beroemdste geleerde van onzen tyd, aan zijn linkerhand de beroemdste dichter, Bernard Shaw. Rechts van Einstein zat Wells.  Het was een gastmaal voor het intellect en z|jn dames.  Ik wil er geen verslag van geven, maar my bepalen tot enkele aanteekeningen.", 9993, True)
     >>> from pprint import pprint;pprint(res)
-    {'ners': [{'string': 'Albert Einstein', 'tag': 'per'},
-              {'string': 'Londen', 'tag': 'loc'},
-              {'string': 'Savoy Hotel', 'tag': 'loc'},
-              {'string': 'Ort and Oze Societies', 'tag': 'misc'},
-              {'string': 'Engelsche', 'tag': 'misc'},
-              {'string': 'Vereeniging', 'tag': 'loc'},
-              {'string': u'Lord \u2022 Rothschild', 'tag': 'per'},
-              {'string': 'Duitsche', 'tag': 'misc'},
-              {'string': 'Einstein', 'tag': 'loc'},
-              {'string': 'Lord Rothschild', 'tag': 'per'},
-              {'string': 'Bernard Shaw', 'tag': 'per'},
-              {'string': 'Einstein', 'tag': 'loc'},
-              {'string': 'Wells', 'tag': 'per'}],
-     'pp': [{'parse': [('Albert', 'GivenName'), ('Einstein', 'Surname')],
-             'tag': {'GivenName': 'Albert', 'Surname': 'Einstein'}},
-            {'parse': [(u'Lord', 'GivenName'), (u'Rothschild', 'Surname')],
-             'tag': {'GivenName': u'Lord', 'Surname': u'Rothschild'}},
-            {'parse': [('Lord', 'GivenName'), ('Rothschild', 'Surname')],
-             'tag': {'GivenName': 'Lord', 'Surname': 'Rothschild'}},
-            {'parse': [('Bernard', 'GivenName'), ('Shaw', 'Surname')],
-             'tag': {'GivenName': 'Bernard', 'Surname': 'Shaw'}},
-            {'parse': [('Wells', 'Surname')], 'tag': {'Surname': 'Wells'}}],
-     'raw_ners': [{'string': 'Albert', 'tag': 'b-per'},
-                  {'string': 'Einstein', 'tag': 'i-per'},
-                  {'string': 'Londen', 'tag': 'b-loc'},
-                  {'string': 'Savoy', 'tag': 'b-loc'},
-                  {'string': 'Hotel', 'tag': 'i-loc'},
-                  {'string': 'Ort', 'tag': 'b-misc'},
-                  {'string': 'and Oze Societies', 'tag': 'i-misc'},
-                  {'string': 'Engelsche', 'tag': 'b-misc'},
-                  {'string': 'Vereeniging', 'tag': 'b-loc'},
-                  {'string': 'Lord', 'tag': 'b-per'},
-                  {'string': u'\u2022 Rothschild', 'tag': 'i-per'},
-                  {'string': 'Duitsche', 'tag': 'b-misc'},
-                  {'string': 'Einstein', 'tag': 'b-loc'},
-                  {'string': 'Lord', 'tag': 'b-per'},
-                  {'string': 'Rothschild', 'tag': 'i-per'},
-                  {'string': 'Bernard', 'tag': 'b-per'},
-                  {'string': 'Shaw', 'tag': 'i-per'},
-                  {'string': 'Einstein', 'tag': 'b-loc'},
-                  {'string': 'Wells', 'tag': 'b-per'}],
-     'raw_response': u'Prof. <B-PER>Albert</B-PER> <I-PER>Einstein</I-PER> vertoeft op het oogenblik te <B-LOC>Londen</B-LOC>, en gisteravond was hij in <B-LOC>Savoy</B-LOC> <I-LOC>Hotel</I-LOC> eeregast aan een diner, gegeven door de <B-MISC>Ort</B-MISC> <I-MISC>and Oze Societies</I-MISC>. De voorzitter van de <B-MISC>Engelsche</B-MISC> sectie dier <B-LOC>Vereeniging</B-LOC> is <B-PER>Lord</B-PER> <I-PER>\u2022 Rothschild</I-PER> ; de voorzitter van de <B-MISC>Duitsche</B-MISC> sectie is prof. <B-LOC>Einstein</B-LOC>.  <B-PER>Lord</B-PER> <I-PER>Rothschild</I-PER> presideerde het diner; aan zijn rechterhand zat de beroemdste geleerde van onzen tyd, aan zijn linkerhand de beroemdste dichter, <B-PER>Bernard</B-PER> <I-PER>Shaw</I-PER>. Rechts van <B-LOC>Einstein</B-LOC> zat <B-PER>Wells</B-PER>.  Het was een gastmaal voor het intellect en z|jn dames.  Ik wil er geen verslag van geven, maar my bepalen tot enkele aanteekeningen.'}
-    >>> res = stanford_ner_wrapper("Prof. Albert Einstein vertoeft op het oogenblik te Londen, en gisteravond was hij in Savoy Hotel eeregast aan een diner, gegeven door de Ort and Oze Societies. De voorzitter van de Engelsche sectie dier Vereeniging is Lord • Rothschild ; de voorzitter van de Duitsche sectie is prof. Einstein.  Lord Rothschild presideerde het diner; aan zijn rechterhand zat de beroemdste geleerde van onzen tyd, aan zijn linkerhand de beroemdste dichter, Bernard Shaw. Rechts van Einstein zat Wells.  Het was een gastmaal voor het intellect en z|jn dames.  Ik wil er geen verslag van geven, maar my bepalen tot enkele aanteekeningen.", 9993, True)
-    >>> from pprint import pprint;pprint(res)
-    {'ners': [{'string': 'Albert Einstein', 'tag': 'per'},
-              {'string': 'Londen', 'tag': 'loc'},
-              {'string': 'Savoy Hotel', 'tag': 'loc'},
-              {'string': 'Ort and Oze Societies', 'tag': 'misc'},
-              {'string': 'Engelsche', 'tag': 'misc'},
-              {'string': 'Vereeniging', 'tag': 'loc'},
-              {'string': u'Lord \u2022 Rothschild', 'tag': 'per'},
-              {'string': 'Duitsche', 'tag': 'misc'},
-              {'string': 'Einstein', 'tag': 'loc'},
-              {'string': 'Lord Rothschild', 'tag': 'per'},
-              {'string': 'Bernard Shaw', 'tag': 'per'},
-              {'string': 'Einstein', 'tag': 'loc'},
-              {'string': 'Wells', 'tag': 'per'}],
-     'pp': [{'parse': [('Albert', 'GivenName'), ('Einstein', 'Surname')],
-             'tag': {'GivenName': 'Albert', 'Surname': 'Einstein'}},
-            {'parse': [(u'Lord', 'GivenName'), (u'Rothschild', 'Surname')],
-             'tag': {'GivenName': u'Lord', 'Surname': u'Rothschild'}},
-            {'parse': [('Lord', 'GivenName'), ('Rothschild', 'Surname')],
-             'tag': {'GivenName': 'Lord', 'Surname': 'Rothschild'}},
-            {'parse': [('Bernard', 'GivenName'), ('Shaw', 'Surname')],
-             'tag': {'GivenName': 'Bernard', 'Surname': 'Shaw'}},
-            {'parse': [('Wells', 'Surname')], 'tag': {'Surname': 'Wells'}}],
-     'raw_ners': [{'string': 'Albert', 'tag': 'b-per'},
-                  {'string': 'Einstein', 'tag': 'i-per'},
-                  {'string': 'Londen', 'tag': 'b-loc'},
-                  {'string': 'Savoy', 'tag': 'b-loc'},
-                  {'string': 'Hotel', 'tag': 'i-loc'},
-                  {'string': 'Ort', 'tag': 'b-misc'},
-                  {'string': 'and Oze Societies', 'tag': 'i-misc'},
-                  {'string': 'Engelsche', 'tag': 'b-misc'},
-                  {'string': 'Vereeniging', 'tag': 'b-loc'},
-                  {'string': 'Lord', 'tag': 'b-per'},
-                  {'string': u'\u2022 Rothschild', 'tag': 'i-per'},
-                  {'string': 'Duitsche', 'tag': 'b-misc'},
-                  {'string': 'Einstein', 'tag': 'b-loc'},
-                  {'string': 'Lord', 'tag': 'b-per'},
-                  {'string': 'Rothschild', 'tag': 'i-per'},
-                  {'string': 'Bernard', 'tag': 'b-per'},
-                  {'string': 'Shaw', 'tag': 'i-per'},
-                  {'string': 'Einstein', 'tag': 'b-loc'},
-                  {'string': 'Wells', 'tag': 'b-per'}],
-     'raw_response': u'Prof. <B-PER>Albert</B-PER> <I-PER>Einstein</I-PER> vertoeft op het oogenblik te <B-LOC>Londen</B-LOC>, en gisteravond was hij in <B-LOC>Savoy</B-LOC> <I-LOC>Hotel</I-LOC> eeregast aan een diner, gegeven door de <B-MISC>Ort</B-MISC> <I-MISC>and Oze Societies</I-MISC>. De voorzitter van de <B-MISC>Engelsche</B-MISC> sectie dier <B-LOC>Vereeniging</B-LOC> is <B-PER>Lord</B-PER> <I-PER>\u2022 Rothschild</I-PER> ; de voorzitter van de <B-MISC>Duitsche</B-MISC> sectie is prof. <B-LOC>Einstein</B-LOC>.  <B-PER>Lord</B-PER> <I-PER>Rothschild</I-PER> presideerde het diner; aan zijn rechterhand zat de beroemdste geleerde van onzen tyd, aan zijn linkerhand de beroemdste dichter, <B-PER>Bernard</B-PER> <I-PER>Shaw</I-PER>. Rechts van <B-LOC>Einstein</B-LOC> zat <B-PER>Wells</B-PER>.  Het was een gastmaal voor het intellect en z|jn dames.  Ik wil er geen verslag van geven, maar my bepalen tot enkele aanteekeningen.'}
+
     """
     for s in ("\f", "\n", "\r", "\t", "\v"):  # strip whitespaces
         text = text.replace(s, '')
@@ -207,29 +117,24 @@ def stanford_ner_wrapper(text, port=False, use_pp=True, host='localhost'):
     ner["ners"] = ners
 
     # Apply probablepeople / (parse and tag)
-    if use_pp:
-        pp = []
-        for item in ners:
-            # Loop over the Stanford NER (per/ person) results,
-            # and apply probablepeople, which raises when fails, (so try).
-            if "per" in item["tag"].lower():
-                result = {}
-                try:
-                    result["parse"] = probablepeople.parse(item["string"])
-                    for key, value in probablepeople.tag(item["string"])[0].iteritems():
-                        if "tag" not in result:
-                            result["tag"] = {}
-                        if key not in result["tag"]:
-                            result["tag"][key] = value
-                        else:
-                            result["tag"][key] += " " + value
-                except:
-                    if "error" not in result:
-                        result["error"] = 0
-                    else:
-                        result["error"] += 1
+    if not use_pp:
+        ners["pp"] = None
+        return ner
+
+    pp = []
+    for item in ners:
+        # Loop over the Stanford NER (per/ person) results,
+        # and apply probablepeople, which raises when fails, (so try).
+        if "per" in item["tag"].lower():
+            try:
+                result = parse(item.get('string'))
+            except:
+                log.error("Could not run probablepeople")
+
+            if result:
+                result = parse(item["string"])
                 pp.append(result)
-        ner["pp"] = pp
+    ner["pp"] = pp
     return ner
 
 

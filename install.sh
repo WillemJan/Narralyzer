@@ -138,15 +138,14 @@ is_virtualenv_avail() {
 path=$($CONFIG root)"/stanford"
 if [ ! -d "$path" ]; then
     mkdir -p "$path" || airbag "Could not create dir $path" $LINENO
-fi
-
-if [ ! -f $($CONFIG stanford_core_path) ];then
-    # Fetch Stanford-core and install it.
-    cd "$path" || airbag "Could not enter directory: $path" $LINENO
-    fetch_stanford_core || airbag "Could not fetch stanford core."
+    if [ ! -f $($CONFIG stanford_core) ];then
+        # Fetch Stanford-core and install it.
+        cd "$path" || airbag "Could not enter directory: $path" $LINENO
+        fetch_stanford_core || cd ..; airbag "Could not fetch stanford core."
+    else
+        inform_user "Not fetching stanford-core, allready there."
+    fi
     cd ..
-else
-    inform_user "Not fetching stanford-core, allready there."
 fi
 
 # If the Stanford models are allready there, do nothing.
@@ -197,7 +196,7 @@ if [ ! -d "env" ]; then
     if [ -f "$req" ]; then
         inform_user "Running pip -r $req"
         cat "$req"
-        pip install -r "$req" || airbag "Something went wrong while installing the required python packages."
+        python2.7 setup.py install || airbag "Something went wrong while running ./setup.py install"
     else
         airbag "Could not find requirements.txt in $req"
     fi

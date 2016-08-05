@@ -6,7 +6,7 @@
     Implements a dialog visualisation between person's extracted from text.
 
     :copyright: (c) 2016 Koninklijke Bibliotheek, by Willem Jan Faber.
-    :license: GPLv3, see LICENCE.txt for more details.
+    :license: GPLv3, see licence.txt for more details.
 """
 
 import sys
