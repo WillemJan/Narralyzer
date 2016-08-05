@@ -202,7 +202,7 @@ if [ ! -d "env" ]; then
         inform_user "Running pip -r $req"
         cat "$req"
         pip install -r "$req" || airbag "Something went wrong while installing the required python packages."
-    elif
+    else
         airbag "Could not find requirements.txt in $req"
     fi
 fi
