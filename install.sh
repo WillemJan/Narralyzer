@@ -6,6 +6,7 @@
 # This file is part of the Narralyzer package.
 # see: http://github.com/WillemJan/Narralyzer
 #
+# http://stackoverflow.com/questions/17804007/how-to-show-line-number-when-executing-bash-script#17805088
 
 # If you run into troubles try this: 
 # 
@@ -20,11 +21,23 @@
 # all (global) variables should be defined in the conf/conf.ini file.
 CONFIG=$(./narralyzer/config.py self)
 
+
+#------------------------------------------------
+# Functions
+#------------------------------------------------
+
 # Little wrapper to datestamp outgoing messages.
 function inform_user() {
     msg="$1"
     timestamp=$(date "+%Y-%m-%d %H:%M")
     echo "$timestamp: Narralyzer install.sh $msg"
+}
+
+# Little wrapper to safely exit the burning script.
+function airbag() {
+    inform_user $1
+    echo "Exit with -1, from: install.sh:$2"
+    exit -1
 }
 
 # Fetch the given URL, and save to disk
@@ -43,10 +56,9 @@ function get_if_not_there () {
                retries=$(($retries - 1))
                if [ $retries == 0 ]; then
                    $(wget -q "$URL")
-                   inform_user "Error while fetching $URL, no retries left."
-                   exit -1
+                   airbag "Error while fetching $URL, no retries left." $LINENO
                else
-                   inform_user "Error while fetching $URL, $retries left."
+                   inform_user "Error while fetching $URL, $retries left." $LINENO
                    sleep 1
                fi
            else
@@ -76,12 +88,22 @@ function fetch_stanford_core {
 # and generate md5sum usefull for reference later.
 function move_classifiers_inplace {
     for lang in $($CONFIG supported_languages | xargs);do
-        target_path=$(./narralyzer/config.py stanford_ner_path)
-        src=$(find ./stanford/models -name $($CONFIG "lang_"$lang"_stanford_ner") -type f)
-        checksum=$(md5sum $src)
-        target=$target_path"/"$lang"/"$checksum
-        inform_user "Moving classiefer $src to $target"
-        mv $src $target
+        target_path=$($CONFIG root)
+        echo "LANG: $lang"
+        echo "target_path: $target_path"
+        target_path="$target_path$($CONFIG stanford_ner_path)"/"$lang"
+        echo "target_path: $target_path"
+        if [ ! -d $target_path ]; then
+            mkdir -p $target_path || airbag "Could not create directory: $target_path" $LINENO
+            inform_user "Created directory: $target_path"
+        fi
+        src="$($CONFIG root)"/"$(find stanford/models -name $($CONFIG "lang_"$lang"_stanford_ner") -type f || airbag "Could not find model for $lang." $LINENO)"
+        checksum=$(md5sum -b "$src" | cut -d ' ' -f 1 || airbag "Failed to md5sum $src" $LINENO) 
+        target="$target_path"/"$checksum"
+        inform_user "Moving classiefer $src to $target...."
+        # SHOWER-THOUGHT: I could also link them, and delete unused files..
+        # For now, this feels right.
+        mv "$src" "$target" || airbag "Failed to move $src to $target" $LINENO
     done
 }
 
@@ -98,8 +120,7 @@ function fetch_stanford_lang_models {
 is_python2_7_avail() {
     is_avail=$(which python2.7 | wc -l)
     if [ "$is_avail" = "0" ]; then
-        inform_user "Python 2.7 is not available, helas. sudo apt-get install python2.7?"
-        exit -1
+        airbag "Python 2.7 is not available, helas. sudo apt-get install python2.7?" $LINENO
     fi
     inform_user "Python 2.7 is available."
 }
@@ -108,44 +129,60 @@ is_python2_7_avail() {
 is_virtualenv_avail() {
     is_avail=$(which virtualenv | wc -l)
     if [ "$is_avail" = "0" ]; then
-        inform_user "Virtualenv is not available, helas. sudo-apt-get install virtualenv?"
-        exit -1
+        airbag "Virtualenv is not available, helas. sudo-apt-get install virtualenv?" $LINENO
     fi
     inform_user "Virtualenv is available."
 }
 
+
+#--------------------------------------------------------
+# /Functions
+#-------------------------------------------------------
+
 # Create directory stanford if not exists.
-if [ ! -d 'stanford' ]; then
-    mkdir stanford
+path=$($CONFIG root)"/stanford"
+if [ ! -d "$path" ]; then
+    mkdir -p "$path" || airbag "Could not create dir $path" $LINENO
 fi
 
 # If stanford-corenlp-full*.zip is allready there, do nothing.
 full=$(find ./stanford/ -name \*full\* | wc -l)
 if [ "$full" = "0" ];then
-    # Fetch stanford-core from their site,
-    # and install it.
-    cd stanford
-    fetch_stanford_core
+    # Fetch stanford-core and install it.
+    cd "$path" || airbag "Could not enter directory: $path" $LINENO
+    fetch_stanford_core || airbag "Could not fetch stanford core."
     cd ..
 else
     inform_user "Not fetching stanford-core, allready there."
 fi
 
-# If the models are allready there, do nothing.
-if [ ! -d 'stanford/models' ]; then
-    # Else fetch and unpack models.
-    mkdir -p stanford/models && cd stanford/models
-    fetch_stanford_lang_models
-    cd ../..
-else
-    inform_user "Not fetching stanford language models, allready there."
-fi
+# If the Stanford models are allready there, do nothing.
+if [ ! -f 'stanford/models' ]; then
+    if [ ! -d 'stanford/models' ]; then
+        # Else fetch and unpack models.
+        mkdir -p "stanford/models" && cd "stanford/models" || airbag "Could not create/enter directory: $path." $LINENO
+        fetch_stanford_lang_models || airbag "Error while fetching language models." $LINENO
+        cd ../..
 
-stanford_ner_path=$($CONFIG stanford_ner_path)
-echo $stanford_ner_path
-if [ ! -d $stanford_ner_path ]; then
-    mkdir -p $stanford_ner_path
-    move_classifiers_inplace
+        # Move the Stanford language models to the 'stanford_ner_path',
+        # as defined in config.ini. Also fingerpint the models with md5sum,
+        # and delete the orginal files.
+        stanford_ner_path=$($CONFIG stanford_ner_path)
+        if [ ! -d $stanford_ner_path ]; then
+            mkdir -p $stanford_ner_path || airbag "Could not create directory: $stanford_ner_path." $LINENO
+            move_classifiers_inplace || airbag "Could not move Stanford laguage models in place." $LINENO
+            path="$($CONFIG root)""/stanford/models"
+            inform_user "Removing unused Stanford models from $path"
+            rm -rf "$path" || airbag "Was unable to remove: $path"
+            touch "$path"
+        else
+            inform_user "NER language models allready in place."
+        fi
+    else
+        inform_user "Not fetching stanford language models from upstream, allready there."
+    fi
+else
+    inform_user "Not fetching stanford language models, allready installed."
 fi
 
 # Check if the virtual env exists, if not, create one and within

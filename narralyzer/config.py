@@ -115,6 +115,13 @@ class Config():
             if language not in self.config["supported_languages"]:
                 self.config["supported_languages"].append(language)
 
+
+    def _check_model_in_place(self, current_value, lang):
+        result = current_value
+
+
+        return result 
+
     def get(self, variable):
         # If enduser wants caps.
         end_users_wants_uppercase = False
@@ -141,9 +148,14 @@ class Config():
                     key_name = "lang_{0}_{1}".format(language_3166, key)
                     if key_name == variable:
                         result = result.get(language_3166).get(key)
+                        # The original model-file was moved during install
+                        # check if the model is there, if it is there
+                        # return the absolute path for the model-file.
+                        #result = self._check_model_in_place(result, lang)
                         break
             if not isinstance(result, str):
                 return None
+
 
         # Lists will be displayed with spaces in between
         if isinstance(result, list):
