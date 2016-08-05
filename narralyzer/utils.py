@@ -40,8 +40,7 @@ OUTPUT_PATH = os.sep + 'out' + os.sep
 def logger(name, loglevel='warning'):
     try:
         loglevel = getattr(logging,
-                           [l for l in dir(logging) if (
-                               l.isupper() and l.lower()) == loglevel].pop())
+                        [l for l in dir(logging) if l.isupper() and l.lower() == loglevel].pop())
     except:
         loglevel = DEFAULT_LOGLEVEL
 
