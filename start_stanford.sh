@@ -75,7 +75,7 @@ done
 # Wait until the cores are booted and responsive,
 # if parameter 'waitforstartup' is given to start_stanford.sh.
 for lang in $($CONFIG supported_languages | xargs); do
-    port=$($CONFIG lang_$lang_stanford_port)
+    port=$($CONFIG lang_"$lang"_stanford_port)
     if [ "$1" == "waitforstartup" ];then
         count=$(lsof -i tcp -n | grep $port | wc -l)
         while [ "$count" != "1" ]; do
