@@ -10,7 +10,7 @@
     :license: GPLv3, see LICENCE.txt for more details.
 '''
 
-from os import path
+from os import path, listdir
 from ConfigParser import ConfigParser
 
 import sys
@@ -115,13 +115,6 @@ class Config():
             if language not in self.config["supported_languages"]:
                 self.config["supported_languages"].append(language)
 
-
-    def _check_model_in_place(self, current_value, lang):
-        result = current_value
-
-
-        return result 
-
     def get(self, variable):
         # If enduser wants caps.
         end_users_wants_uppercase = False
@@ -141,21 +134,25 @@ class Config():
 
         # Parse the 'models', into lang_en_stanford_port: 9991 fashion.
         if isinstance(result, dict):
-            for language_3166 in result:
-                if not isinstance(result, dict):
-                    continue
-                for key in result.get(language_3166):
-                    key_name = "lang_{0}_{1}".format(language_3166, key)
-                    if key_name == variable:
-                        result = result.get(language_3166).get(key)
-                        # The original model-file was moved during install
-                        # check if the model is there, if it is there
-                        # return the absolute path for the model-file.
-                        #result = self._check_model_in_place(result, lang)
-                        break
+            if variable.endswith('stanford_path'):
+                requested_language = variable.replace('_stanford_path','')
+                requested_language = requested_language.replace('lang_', '')
+                for language_3166 in result:
+                    if language_3166 == requested_language:
+                        ner_path = self.config.get('stanford_ner_path')
+                        ner_path = path.join(self.config.get('root'), ner_path, language_3166)
+                        result = listdir(ner_path)[0]
+            else:
+                for language_3166 in result:
+                    if not isinstance(result, dict):
+                        continue
+                    for key in result.get(language_3166):
+                        key_name = "lang_{0}_{1}".format(language_3166, key)
+                        if key_name == variable:
+                            result = result.get(language_3166).get(key)
+                            break
             if not isinstance(result, str):
                 return None
-
 
         # Lists will be displayed with spaces in between
         if isinstance(result, list):

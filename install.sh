@@ -6,7 +6,6 @@
 # This file is part of the Narralyzer package.
 # see: http://github.com/WillemJan/Narralyzer
 #
-# http://stackoverflow.com/questions/17804007/how-to-show-line-number-when-executing-bash-script#17805088
 
 # If you run into troubles try this: 
 # 
@@ -86,7 +85,7 @@ function fetch_stanford_core {
 # Moves the retrieved classifiers into there respective lang dir, 
 # and generate md5sum usefull for reference later.
 function move_classifiers_inplace {
-    for lang in $($CONFIG supported_languages | xargs);do
+    for lang in $($CONFIG supported_languages | xargs); do
         target_path=$($CONFIG root)
         echo "LANG: $lang"
         echo "target_path: $target_path"
