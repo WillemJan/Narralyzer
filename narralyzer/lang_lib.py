@@ -5,7 +5,7 @@
     ~~~~~~~~~~~~~~~~~~~
     Implements sentence level analyzer for natural language.
 
-    Method: Building on the shoulders of giants :)
+    Method: Building on the shoulders of giants.
 
     :copyright: (c) 2016 Koninklijke Bibliotheek, by Willem Jan Faber.
     :license: GPLv3, see LICENCE.txt for more details.
@@ -35,13 +35,6 @@ try:
 except:
     import utils
 
-# TODO Move this to a seperate config module.
-STANFORD_NER_SERVERS = {"de": 9990,
-                        "en": 9991,
-                        "fr": 9992,
-                        "nl": 9993,
-                        "sp": 9994}
-
 
 class Language:
     '''
@@ -51,9 +44,34 @@ class Language:
     This class takes care of chopping up strings/documents into sentences,
     and applies the following:
 
-        - Part-of-speech tagging (Using CLiPS-pattern)
-        - Sentencte analysis (Using CLiPS-pattern)
-        - Named entity extraction (Using Stanford CoreNLP)
+        - Named entity recogniton (Stanford CoreNLP)
+          http://nlp.stanford.edu/software/CRF-NER.shtml
+
+                I've recently discovered https://github.com/mitll/MITIE,
+                which might be a nice option as well.
+
+        - Part-of-speech tagging (CLiPS-pattern)
+          http://www.clips.ua.ac.be/pattern 
+                 For this project we've looked at several of those,
+                 In Dutch we have the luxory of using either:
+                     http://www.let.rug.nl/vannoord/alp/Alpino/ 
+                     I've seen this one work, but was not able to install it properly.
+                     Guess it's a bit outdated. Anyway have no idea how to install it.
+
+                     https://languagemachines.github.io/frog/
+                     Haven't had time to figuere out a way to use it within my repo,
+                     takes a long time to build, but will probably out-preform CLiPS.
+                
+                Since our main focus was at the end NER's, CLiPS will do for now.
+
+        - Sentence segmentation (segtok.segmenter)
+          http://fnl.es/segtok-a-segmentation-and-tokenization-library.html
+
+        - Sentiment analyzer (CLiPS-pattern)
+          http://www.clips.ua.ac.be/pattern
+
+        - Splitting names (Of detected NER's, as of yet untrained)
+          https://github.com/datamade/probablepeople
 
     About
     -----
