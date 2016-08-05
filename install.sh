@@ -197,7 +197,7 @@ if [ ! -d "env" ]; then
     inform_user "Upgrade pip and setuptools to latest version."
     pip install --upgrade pip setuptools
 
-    req=$($CONFIG root"/requirements.txt")
+    req=$($CONFIG root)"/requirements.txt"
     if [ -f "$req" ]; then
         inform_user "Running pip -r $req"
         cat "$req"
