@@ -71,7 +71,7 @@ function get_if_not_there () {
 
 # Fetch and unpack the Stanford core package.
 function fetch_stanford_core {
-    STANFORD_CORE=$($CONFIG stanford_core)
+    STANFORD_CORE=$($CONFIG stanford_core_source)
     get_if_not_there $STANFORD_CORE
     if [ -f $(basename $STANFORD_CORE) ]; then
         unzip -q -n $(basename "$STANFORD_CORE")
