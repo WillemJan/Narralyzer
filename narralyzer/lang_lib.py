@@ -43,7 +43,7 @@ class Language:
     The ``lang_lib.Language`` class is part of the Narralyzer project.
     This class takes care of chopping up strings/documents into sentences,
     and applies the following:
-
+    
         - Named entity recogniton (Stanford CoreNLP)
           http://nlp.stanford.edu/software/CRF-NER.shtml
 
@@ -72,11 +72,6 @@ class Language:
 
         - Splitting names (Of detected NER's, as of yet untrained)
           https://github.com/datamade/probablepeople
-
-    About
-    -----
-    The module combines the power of several awesome Python/Java projects,
-    see overview of most relevant projects below.
 
     Using ``lang_lib.Language``
     ---------------------------
@@ -125,28 +120,6 @@ class Language:
                        'string': u'Willem-Jan Faber just invoked lang_lib.Language, while wishing he was in West Virginia.'}},
      'stats': {'avg_length': 87, 'max': 87, 'min': 87},
      'text': 'Willem-Jan Faber just invoked lang_lib.Language, while wishing he was in West Virginia.'}
-
-    URL + Project / Function within Narralyzer:
-    -------------------------------------------
-
-    http://stanfordnlp.github.io/CoreNLP/
-    Stanford CoreNLP / Find named entities.
-                       Provide (NER) language models.
-
-    http://www.cnts.ua.ac.be/conll2002/ner/data/
-    Conference on Computational Natural Language Learning (CoNLL-2002) /
-                        Provide Dutch language model.
-
-    http://www.clips.ua.ac.be/pattern
-    CLiPS Pattern / Sentiment analysis.
-                    Part-of-speech tagging.
-
-    http://fnl.es/segtok-a-segmentation-and-tokenization-library.html
-    Segtok / Sentencte segmentation.
-
-    https://github.com/datamade/probablepeople
-    probablepeople / Verify & split names.
-
 
     Source code: https://github.com/KBNLresearch/Narralyzer
     '''
