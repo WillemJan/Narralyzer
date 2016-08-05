@@ -100,7 +100,7 @@ function move_classifiers_inplace {
         src="$($CONFIG root)"/"$(find stanford/models -name $($CONFIG "lang_"$lang"_stanford_ner") -type f || airbag "Could not find model for $lang." $LINENO)"
         checksum=$(md5sum -b "$src" | cut -d ' ' -f 1 || airbag "Failed to md5sum $src" $LINENO) 
         target="$target_path"/"$checksum"
-        inform_user "Moving classiefer $src to $target...."
+        inform_user "Moving classifier $src to $target...."
         # SHOWER-THOUGHT: I could also link them, and delete unused files..
         # For now, this feels right.
         mv "$src" "$target" || airbag "Failed to move $src to $target" $LINENO
