@@ -1,0 +1,3 @@
+[submodule "language_models"]
+	path = language_models
+	url = https://github.com/WillemJan/Narralyzer_languagemodel.git
