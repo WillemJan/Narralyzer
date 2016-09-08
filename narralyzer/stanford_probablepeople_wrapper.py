@@ -34,6 +34,7 @@ from django.utils.encoding import smart_text
 
 log = logging.logger(__name__, 'debug')
 
+
 @contextmanager
 def _tcpip4_socket(host, port):
     """Open a TCP/IP4 socket to designated host/port.

@@ -24,13 +24,13 @@ entry_point = ("""
 required = config.get('required')
 
 setup(
-    author = config.get('author'),
-    description = "Narralyzer",
-    entry_points = entry_point,
-    install_requires = required,
-    license = 'GPLv3',
-    name = 'narralyzer',
-    package_dir = [],
-    url = 'https://www.narralyzer.com/',
-    version = config.get('version'),
+    author=config.get('author'),
+    description="Narralyzer",
+    entry_points=entry_point,
+    install_requires=required,
+    license='GPLv3',
+    name='narralyzer',
+    package_dir=[],
+    url='https://www.narralyzer.com/',
+    version=config.get('version'),
 )

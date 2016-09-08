@@ -1,10 +1,11 @@
+import config
+import utils
+
 __all__ = ['stanford_probablepeople_wrapper',
            'Language',
            'utils'
            'config']
 
-import utils
-import config
 config = config.Config()
 
 try:
@@ -13,3 +14,10 @@ try:
 except:
     log = utils.logger(__file__)
     log.warn("Did not import sppw and Language")
+
+
+if __name__ == '__main__':
+    print("=sppw=")
+    print(dir(sppw))
+    print("=Language=")
+    print(dir(Language))

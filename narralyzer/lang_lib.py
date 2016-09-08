@@ -11,12 +11,9 @@
     :license: GPLv3, see licence.txt for more details.
 """
 
-import sys
-reload(sys)
-sys.setdefaultencoding('utf-8')
-
 import importlib
 import string
+import sys
 
 from langdetect import detect
 from numpy import mean
@@ -35,6 +32,8 @@ try:
 except:
     import utils
 
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 class Language:
     '''

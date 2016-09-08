@@ -75,7 +75,6 @@ class Config():
 
         # Config file was parsable,
 
-
     def _parse_config(self, config_file):
         # Check if the config file at least exists.
         if not path.isfile(config_file):
