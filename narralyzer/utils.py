@@ -28,15 +28,6 @@ DEFAULT_LOGLEVEL = logging.DEBUG
 # Define how pretty the logs look
 LOG_FORMAT = 'narralyzer.%(name)-12s %(asctime)s %(levelname)-8s "%(message)s"'
 
-# Get the package-base-path
-BASE_PATH = ''
-
-# Path to test data
-TESTDATA_PATH = os.sep +'test_data' + os.sep
-
-# Path to output files
-OUTPUT_PATH = os.sep + 'out' + os.sep
-
 def logger(name, loglevel='warning'):
     try:
         loglevel = getattr(logging,
@@ -59,11 +50,15 @@ def narralyze(input_text, output_name=False, return_json=True, verbose=True):
         msg = "Did not recieve any text to work with"
         return
 
+    config = config.Config()
+
+    root = config.get('root')
+    output_path = config.get('output_path')
+
     output_name = os.path.join(
-            BASE_PATH,
-            OUTPUT_PATH,
-            output_name
-    )
+            root,
+            output_path,
+            output_name)
 
     '''
 

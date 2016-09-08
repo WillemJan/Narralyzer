@@ -201,6 +201,6 @@ if __name__ == "__main__":
     else:
         if len(sys.argv) >= 2 and "test" in " ".join(sys.argv):
             import doctest
-            doctest.testmod(verbose=False)
+            doctest.testmod(verbose=True)
         else:
             print(config)
