@@ -113,7 +113,7 @@ function fetch_stanford_lang_models {
 
 # Check if Python2.7 is installed on the os,
 # we might need that in the near future.
-is_python2_7_avail() {
+function is_python2_7_avail() {
     is_avail=$(which python2.7 | wc -l)
     if [ "$is_avail" = "0" ]; then
         airbag "Python 2.7 is not available, helas. sudo apt-get install python2.7?" $LINENO
@@ -122,7 +122,7 @@ is_python2_7_avail() {
 }
 
 # Check if we find (Python) virtualenv.
-is_virtualenv_avail() {
+function is_virtualenv_avail() {
     is_avail=$(which virtualenv | wc -l)
     if [ "$is_avail" = "0" ]; then
         airbag "Virtualenv is not available, helas. sudo-apt-get install virtualenv?" $LINENO
@@ -130,9 +130,19 @@ is_virtualenv_avail() {
     inform_user "Virtualenv is available."
 }
 
+function fetch_and_install_language_models() {
+    inform_user "Fetching and installing language models."
+    git submodule init
+    git submodule update
+    
+}
+
 #--------------------------------------------------------
 # /Functions
 #-------------------------------------------------------
+
+fetch_and_install_language_models
+exit
 
 # Create directory stanford if not exists.
 path=$($CONFIG root)"/stanford"
@@ -179,6 +189,8 @@ fi
 
 # Check if the virtual env exists, if not, create one and within
 # the virtual env install the required packages.
+
+
 if [ ! -d "env" ]; then
     is_python2_7_avail
     is_virtualenv_avail
