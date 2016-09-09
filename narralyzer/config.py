@@ -37,6 +37,8 @@ class Config():
     'DE EN NL SP'
     >>> config.get('version')
     '0.1'
+    >>> config.get('lang_en_stanford_port')
+    '9991'
     """
 
     config = {
