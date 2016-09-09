@@ -85,7 +85,7 @@ def narralyze(input_text, output_name=False, return_json=True, verbose=True):
         result = lang.result
     else:
         if not os.path.isfile(ofname):
-            ofname = os.path.join("..", , fname.replace('.txt', '.pickle.gz'))
+            ofname = os.path.join("..", fname.replace('.txt', '.pickle.gz'))
         # Load the tagged sentences from a compressed pickle file.
         fh = gzip.GzipFile(ofname, 'rb')
         raw_data = ""

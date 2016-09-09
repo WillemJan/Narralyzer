@@ -20,7 +20,10 @@ sys.setdefaultencoding('utf-8')
 try:
     from narralyzer.util import logger as logger
 except:
-    from utils import logger
+    try:
+        from utils import logger
+    except:
+        logger = None
 
 
 class Config():
@@ -60,7 +63,7 @@ class Config():
         root = self.config['root']
 
         # Initialize the logger with the name of this class.
-        if self.logger is None:
+        if self.logger is None and not logger is None:
             self.logger = logger(self.__class__.__name__, 'info')
             self.logger.debug("Assuming root: {0}".format(root))
 
@@ -80,7 +83,8 @@ class Config():
         if not path.isfile(config_file):
             msg = ("Could not open config file: {0}".format(
                 path.abspath(config_file)))
-            self.logger.critical(msg)
+            if not self.logger is None:
+                self.logger.critical(msg)
             sys.exit(-1)
 
         # Use https://docs.python.org/3.5/library/configparser.html
@@ -88,11 +92,13 @@ class Config():
         config = ConfigParser()
         try:
             config.read(config_file)
-            self.logger.debug("Using config file: {0}".format(
-                config_file))
+            if not self.logger is None:
+                self.logger.debug("Using config file: {0}".format(
+                    config_file))
         except:
-            self.logger.critical("Failed to open: {0}".format(
-                config_file))
+            if not self.logger is None:
+                self.logger.critical("Failed to open: {0}".format(
+                    config_file))
 
         # Use the values in the config-file to populate
         # the config dictionary.
@@ -193,7 +199,10 @@ if __name__ == "__main__":
         result = config.get(" ".join(sys.argv[1:]))
         if result is None:
             msg = "Config key {0} unknown.".format(" ".join(sys.argv[1:]))
-            config.logger.fatal(msg)
+            if not logger is None:
+                config.logger.fatal(msg)
+            else:
+                print(msg)
             exit(-1)
         else:
             print(result)
