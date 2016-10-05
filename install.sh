@@ -69,48 +69,6 @@ function get_if_not_there () {
     fi
 }
 
-# Fetch and unpack the Stanford core package.
-function fetch_stanford_core {
-    STANFORD_CORE=$($CONFIG stanford_core_source)
-    get_if_not_there $STANFORD_CORE
-    if [ -f $(basename $STANFORD_CORE) ]; then
-        unzip -q -n $(basename "$STANFORD_CORE")
-        # Remove the download package aferwards.
-        rm $(basename "$STANFORD_CORE")
-        # TODO: fix next line
-        ln -s $(find -name \*full\* -type d) core
-    fi
-}
-
-# Moves the retrieved classifiers into there respective lang dir, 
-# and generate md5sum usefull for reference later.
-function move_classifiers_inplace {
-    for lang in $($CONFIG supported_languages | xargs); do
-        target_path=$($CONFIG root)
-        target_path="$target_path"/"$($CONFIG stanford_ner_path)"/"$lang"
-        echo "target_path: $target_path"
-        if [ ! -d $target_path ]; then
-            mkdir -p $target_path || airbag "Could not create directory: $target_path" $LINENO
-            inform_user "Created directory: $target_path"
-        fi
-        src="$($CONFIG root)"/"$(find stanford/models -name $($CONFIG "lang_"$lang"_stanford_ner") -type f || airbag "Could not find model for $lang." $LINENO)"
-        checksum=$(md5sum -b "$src" | cut -d ' ' -f 1 || airbag "Failed to md5sum $src" $LINENO) 
-        target="$target_path"/"$checksum"".crf.ser.gz"
-        inform_user "Moving classifier $src to $target."
-        # SHOWER-THOUGHT: I could also link them, and delete unused files..
-        # For now, this feels right.
-        mv "$src" "$target" || airbag "Failed to move $src to $target" $LINENO
-    done
-}
-
-# Fetch and unpack the language models.
-function fetch_stanford_lang_models {
-    for lang in $($CONFIG supported_languages | xargs);do
-        get_if_not_there $($CONFIG "lang_"$lang"_stanford_ner_source")
-    done
-    find . -name \*.jar -exec unzip -q -o '{}' ';'
-}
-
 # Check if Python2.7 is installed on the os,
 # we might need that in the near future.
 function is_python2_7_avail() {
@@ -130,67 +88,29 @@ function is_virtualenv_avail() {
     inform_user "Virtualenv is available."
 }
 
+# Fetch external github repository.
 function fetch_and_install_language_models() {
     inform_user "Fetching and installing language models."
     git submodule init
     git submodule update
-    
 }
 
 #--------------------------------------------------------
 # /Functions
 #-------------------------------------------------------
 
-fetch_and_install_language_models
-exit
+# Get external language models
+# https://github.com/WillemJan/Narralyzer_languagemodel
 
-# Create directory stanford if not exists.
-path=$($CONFIG root)"/stanford"
-if [ ! -d "$path" ]; then
-    mkdir -p "$path" || airbag "Could not create dir $path" $LINENO
-    if [ ! -f $($CONFIG stanford_core) ];then
-        # Fetch Stanford-core and install it.
-        cd "$path" || airbag "Could not enter directory: $path" $LINENO
-        fetch_stanford_core || cd ..; airbag "Could not fetch stanford core."
-    else
-        inform_user "Not fetching stanford-core, allready there."
-    fi
-    cd ..
-fi
-
-# If the Stanford models are allready there, do nothing.
-if [ ! -f 'stanford/models' ]; then
-    if [ ! -d 'stanford/models' ]; then
-        # Else fetch and unpack models.
-        mkdir -p "stanford/models" && cd "stanford/models" || airbag "Could not create/enter directory: $path." $LINENO
-        fetch_stanford_lang_models || airbag "Error while fetching language models." $LINENO
-        cd ../..
-
-        # Move the Stanford language models to the 'stanford_ner_path',
-        # as defined in config.ini. Also fingerpint the models with md5sum,
-        # and delete the orginal files.
-        stanford_ner_path=$($CONFIG stanford_ner_path)
-        if [ ! -d $stanford_ner_path ]; then
-            mkdir -p $stanford_ner_path || airbag "Could not create directory: $stanford_ner_path." $LINENO
-            move_classifiers_inplace || airbag "Could not move Stanford laguage models in place." $LINENO
-            path="$($CONFIG root)""/stanford/models"
-            inform_user "Removing unused Stanford models from $path"
-            rm -rf "$path" || airbag "Was unable to remove: $path"
-            touch "$path"
-        else
-            inform_user "NER language models allready in place."
-        fi
-    else
-        inform_user "Not fetching stanford language models from upstream, allready there."
-    fi
+if [ ! -f "language_models/.git" ]; then
+    fetch_and_install_language_models
 else
-    inform_user "Not fetching stanford language models, allready installed."
+    inform_user "Language model allready available, preforming update"
+    git submodule update
 fi
 
 # Check if the virtual env exists, if not, create one and within
 # the virtual env install the required packages.
-
-
 if [ ! -d "env" ]; then
     is_python2_7_avail
     is_virtualenv_avail
@@ -206,19 +126,13 @@ if [ ! -d "env" ]; then
 
     req=$($CONFIG root)"/requirements.txt"
     if [ -f "$req" ]; then
-        inform_user "Running pip -r $req"
-        cat "$req"
-        python2.7 setup.py install || airbag "Something went wrong while running ./setup.py install"
+        inform_user "Running: python2.7 setup.py install"
+        python2.7 setup.py install || airbag "Something went wrong while running: python2.7 setup.py install"
     else
         airbag "Could not find requirements.txt in $req"
     fi
+else
+    inform_user "Virtualenv allready present, preforming update."
+    source env/bin/activate
+    python2.7 setup.py install || airbag "Something went wrong while running: python2.7 setup.py install"
 fi
-
-#if [ ! -d 'tika' ]; then
-# Tika will take care of most input document conversion.
-#TIKA=$($CONFIG tika)
-#    mkdir tika && cd tika
-#    get_if_not_there $TIKA
-#    unzip -q -n basename "$TIKA"
-#    rm basename"$TIKA"
-#fi
