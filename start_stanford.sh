@@ -54,7 +54,7 @@ fi
 
 # Start several Stanford core servers.
 for lang in $($CONFIG supported_languages | xargs); do
-    classifier=$($CONFIG lang_"$lang"_stanford_path)
+    classifier=$($CONFIG lang_"$lang"_stanford_ner)
     port=$($CONFIG lang_"$lang"_stanford_port)
 
     count=$(lsof -i tcp -n | grep $port | wc -l)
