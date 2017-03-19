@@ -9,7 +9,7 @@
 
 # If you run into troubles try this: 
 # 
-# sudo apt-get install -y build-essesntials libdb-dev virtualenv python2.7 libxml2-dev libxslt1-dev
+# sudo apt-get install -y build-essential libdb-dev virtualenv python2.7 libxml2-dev libxslt1-dev
 #
 # Or leave a ping here: https://www.github.com/WillemJan/Narralyzer
 #
