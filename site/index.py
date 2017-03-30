@@ -3,7 +3,7 @@
 import os, sys
 
 sys.path.append(os.path.dirname(__file__))
-VIRT_ENV = "env/bin/activate_this.py"
+VIRT_ENV = os.path.dirname(__file__) + os.sep + "env/bin/activate_this.py"
 execfile(VIRT_ENV, dict(__file__=VIRT_ENV))
 
 #from pprint import pprint
@@ -154,7 +154,6 @@ def handle_uploaded_document(uploaded_org_filename, path_uploaded_file):
                             t_ascii_letters=t_ascii_letters,
                             t_punct_letters=t_punct_letters,
                             t_noise_letters=t_noise_letters,
-                            ftype=ftype,
                             narrative=narrative)
 
 class Narrative():

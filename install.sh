@@ -118,6 +118,8 @@ if [ ! -d "env" ]; then
     inform_user "Creating new virtualenv using python2.7 in ./env"
     virtualenv -p python2.7 ./env
 
+    cd site; ln -s ../env ./; cd ..
+
     inform_user "Entering virtualenv, to leave: deactivate."
     source env/bin/activate
 
