@@ -6,3 +6,4 @@ env
 *swp
 stanford
 *pyc
+site/static/js/codemirror-5.25.0/

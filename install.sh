@@ -138,3 +138,9 @@ else
     source env/bin/activate
     python2.7 setup.py install || airbag "Something went wrong while running: python2.7 setup.py install"
 fi
+
+cd site/js/
+get_if_not_there http://codemirror.net/codemirror.zip
+unzip codemirror.zip
+cd -
+

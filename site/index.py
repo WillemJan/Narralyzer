@@ -32,7 +32,7 @@ from langdetect import detect
 from time import gmtime, strftime
 from werkzeug import secure_filename
 
-UPLOAD_FOLDER = 'upload'
+UPLOAD_FOLDER = '/var/www/narralyzer/upload'
 
 sys.path.append(os.path.dirname(__file__))
 
@@ -154,7 +154,7 @@ def handle_uploaded_document(uploaded_org_filename, path_uploaded_file):
                             t_ascii_letters=t_ascii_letters,
                             t_punct_letters=t_punct_letters,
                             t_noise_letters=t_noise_letters,
-                            narrative=narrative)
+                            narrative="narrative")
 
 class Narrative():
     titles = []
@@ -185,8 +185,8 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@application.route('/', methods=['GET', 'POST'])
-def index():
+@application.route('/process', methods=['GET', 'POST'])
+def process():
     if request.method == 'POST':
         upload = request.files['file']
 
@@ -212,8 +212,14 @@ def index():
         else:
             error = 'Error: Did not recieve valid file, filename must end with either .xml, .pdf or .txt'
             return render_template('error.html', val=error)
+    else:
+        return render_template('chapters.html', raw_text=request.args.get('raw_text'))
 
-    elif request.method == 'GET' and request.args.get('lang', ''):
+
+
+@application.route('/', methods=['GET', 'POST'])
+def index():
+    if request.method == 'GET' and request.args.get('lang', ''):
         return render_template('analyze.html')
 
     return render_template('index.html')
