@@ -1,5 +1,52 @@
-<html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <title>Narralyzer</title>
+    <link rel="stylesheet" type="text/css" href="static/css/style.css">
 
-{{ raw_text }}
+    <script src="static/js/codemirror/lib/codemirror.js"></script>
+    <link rel="stylesheet" href="static/js/codemirror/lib/codemirror.css">
+      <style type="text/css">
+      .breakpoints {width: .8em;}
+      .breakpoint { color: #822; }
+      .CodeMirror {border: 1px solid #aaa;}
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <img src="static/img/logo_kb.png" id="header_logo_kb">
+      <img src="static/img/logo_ru.png" id="header_logo_ru">
+      <h1>Narralyzer</h1>
+      <h2>Please define chapters</h2>
+    </div>
+   </head>
+   <form><textarea id="code" name="code" style='margin-left: 100px;'> {{ raw_text }} </textarea></form>
+    <script>
+    var chapters = 0;
+
+    var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+      lineNumbers: true,
+      gutters: ["CodeMirror-linenumbers", "breakpoints"]
+    });
+
+    editor.on("gutterClick", function(cm, n) {
+      var info = cm.lineInfo(n);
+      cm.setGutterMarker(n, "breakpoints", info.gutterMarkers ? null : makeMarker());
+      chapters = chapters + 1
+      alert(n);
+    });
+
+    function makeMarker() {
+      var marker = document.createElement("div");
+      marker.style.color = "#822";
+      marker.innerHTML = "●";
+      return marker;
+    }
+   </script>
+   <br/>
+   <input type='submit' name='continue' value='continue'>
+</body>
 
 </html>

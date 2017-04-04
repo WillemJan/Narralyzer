@@ -139,8 +139,10 @@ else
     python2.7 setup.py install || airbag "Something went wrong while running: python2.7 setup.py install"
 fi
 
-cd site/js/
-get_if_not_there http://codemirror.net/codemirror.zip
-unzip codemirror.zip
+cd site/static/js/
+    get_if_not_there http://codemirror.net/codemirror.zip
+    unzip codemirror.zip
+    ln -s $(find . -type d | head -2 | tail -1) codemirror
 cd -
+
 
