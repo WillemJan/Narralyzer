@@ -3,17 +3,25 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="utf-8">
-    <title>Narralyzer-0</title>
+    <title>Narralyzer</title>
     <link rel="stylesheet" type="text/css" href="static/css/style.css">
-
-
+    <script src="static/js/jquery.js"></script>
+    <script src="static/js/codemirror/lib/codemirror.js"></script>
+    <link rel="stylesheet" href="static/js/codemirror/lib/codemirror.css">
+    <style type="text/css">
+    .breakpoints { width: .8em; }
+    .breakpoint { color: #822;  }
+    .CodeMirror { border: 1px solid #aaa;
+                  width: 400px; 
+                  margin-left: 100px; }
+    </style>
   </head>
   <body>
     <div class="header">
+      <img src="static/img/narralyzer_logo_small.png" id="header_narralyzer" style='height: 100px;'>
       <img src="static/img/logo_kb.png" id="header_logo_kb">
       <img src="static/img/logo_ru.png" id="header_logo_ru">
-      <h1>Narralyzer</h1>
-      <h2>Select input text.</h2>
+      <h1 style='margin-top: -100px;'>Narralyzer</h1>
     </div>
     {% block body %}
     {% endblock %}

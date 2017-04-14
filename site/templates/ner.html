@@ -1,8 +1,30 @@
-{% extends "main.html" %}
-{% block body %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <title>Narralyzer</title>
+    <link rel="stylesheet" type="text/css" href="static/css/style.css">
+    <script src="static/js/jquery.js"></script>
+    <script src="static/js/codemirror/lib/codemirror.js"></script>
+    <link rel="stylesheet" href="static/js/codemirror/lib/codemirror.css">
+      <style type="text/css">
+      .breakpoints { width: .8em; }
+      .breakpoint { color: #822;  }
+      .CodeMirror { border: 1px solid #aaa;
+                    width: 400px; 
+                    margin-left: 100px; }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <img src="static/img/logo_kb.png" id="header_logo_kb">
+      <img src="static/img/logo_ru.png" id="header_logo_ru">
+      <h1>Narralyzer</h1>
+    </div>
+
    <div sytle='width: 80%; margin: 0 auto;'>
-       <h3>Please define chapters</h3>
-       (By clicking on the line-numbers)
+       <h1>Please define chapters</h1>
        <form action="/narralyzer/process" method=get>
        <textarea id="code" name="code">{{ raw_text }} </textarea>
        <input type="hidden" id="chapters" name="chapters" value="0"/>
@@ -38,5 +60,6 @@
        <input type='submit'>
    </form>
    </div>
-{% endblock %}
+</body>
 
+</html>

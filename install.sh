@@ -14,7 +14,7 @@
 # Or leave a ping here: https://www.github.com/WillemJan/Narralyzer
 #
 # Goal of this install procedure is to get && install && config tools/language models needed.
-#
+# And fetch javascrip libs as needed.
 
 # Narralyzer config util,
 # all (global) variables should be defined in the conf/conf.ini file.
@@ -139,10 +139,17 @@ else
     python2.7 setup.py install || airbag "Something went wrong while running: python2.7 setup.py install"
 fi
 
-cd site/static/js/
+if [ ! -f "site/static/js/codemirror.zip" ]; then
+    cd site/static/js/
     get_if_not_there http://codemirror.net/codemirror.zip
-    unzip codemirror.zip
+    unzip codemirror.zip 
     ln -s $(find . -type d | head -2 | tail -1) codemirror
-cd -
+    cd -
+fi
 
-
+if [ ! -f "site/static/js/jquery.js" ]; then
+    cd site/static/js/
+    get_if_not_there https://code.jquery.com/jquery-3.2.0.min.js
+    ln -s jquery-3.2.0.min.js jquery.js
+    cd -
+fi

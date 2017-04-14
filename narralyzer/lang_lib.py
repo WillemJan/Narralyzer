@@ -151,7 +151,6 @@ class Language:
                 if detected_lang not in STANFORD_NER_SERVERS:
                     msg = "Detected language (%s) is not (yet) supported.\n" % detected_lang
                     print(msg)
-
                 msg = "Using detected language '%s' to parse input text." % detected_lang
                 print(msg)
                 lang = detected_lang
