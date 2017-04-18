@@ -3,13 +3,13 @@
 
 <h3>Paste your text here and press submit</h3>
 <br><br>
-<form action="/narralyzer/process" method=get>
+<form action="/narralyzer/chapters" method=get>
     <textarea rows="4" cols="50" style="margin-left: 100px;" name="raw_text"></textarea><br>
     <input type=submit value=Submit style="margin-left: 250px;">
 </form>
 <h3>Or upload a <a href='https://en.wikipedia.org/wiki/Text_Encoding_Initiative'>.TEI</a> file:</h3>
 <br><br>
-<form action="/narralyzer/process" method=post enctype=multipart/form-data id="uploadform" style='margin-left: 100px;'>
+<form action="/narralyzer/chapters" method=post enctype=multipart/form-data id="uploadform" style='margin-left: 100px;'>
   <p>Select 'Browse' to select a file to upload, next press 'Upload' to commence the uploading.<br>
   <p><input type=file name=file> <input type=submit value=Upload>
 </form>

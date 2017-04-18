@@ -3,11 +3,10 @@
    <div sytle='width: 80%; margin: 0 auto;'>
        <h3>Please define chapters</h3>
        (By clicking on the line-numbers)
-       <form action="/narralyzer/process" method=get>
+       <form action="/narralyzer/characters" method=get>
        <textarea id="code" name="code">{{ raw_text }} </textarea>
        <input type="hidden" id="chapters" name="chapters" value="0"/>
        <script>
-
        var chapters = [];
 
        var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
@@ -32,10 +31,11 @@
           marker.innerHTML = "●";
           return marker;
        }
-
        </script>
        <br/>
-       <input type='submit'>
+       <center>
+           <input type='submit' value='Submit'>
+       </center>
    </form>
    </div>
 {% endblock %}

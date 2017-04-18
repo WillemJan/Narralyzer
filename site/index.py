@@ -180,13 +180,22 @@ class Narrative():
 
     def __repr__(self):
         return ('Narrative: %s, consisting of %s chapters.' % (self.title, len(self.chapters)))
-        
+
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@application.route('/process', methods=['GET', 'POST'])
-def process():
+@application.route('/characters', methods=['GET', 'POST'])
+def characters():
+    return render_template('characters.html', characters=['Klein duimpje',
+                                                          'Repelsteeltje'])
+@application.route('/analyze', methods=['GET', 'POST'])
+def analyze():
+    return render_template('analyze.html')
+
+
+@application.route('/chapters', methods=['GET', 'POST'])
+def chapters():
     if request.method == 'POST':
         upload = request.files['file']
 
