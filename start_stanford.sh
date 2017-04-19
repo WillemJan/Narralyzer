@@ -42,28 +42,21 @@ inform_user "Using java version: $java_version"
 # Use a whopping 4g per language.
 JAVA_MEM="-mx4g"
 
-# From the Stanford repo:
-OS=$(uname)
-# Some machines (older OS X, BSD, Windows environments) don't support readlink -e
-if hash readlink 2>/dev/null; then
-  scriptdir=$(dirname $0)
-else
-  scriptpath=$(readlink -e "$0") || scriptpath=$0
-  scriptdir=$(dirname "$scriptpath")
-fi
+scriptdir=$($CONFIG stanford_core)
 
 # Start several Stanford core servers.
 for lang in $($CONFIG supported_languages | xargs); do
     classifier=$($CONFIG lang_"$lang"_stanford_ner)
     port=$($CONFIG lang_"$lang"_stanford_port)
+    model_path=$($CONFIG stanford_models)
 
     count=$(lsof -i tcp -n | grep $port | wc -l)
     if [ "$count" == "1" ]; then
         inform_user "Not starting $lang on port $port for it is allready running."
     else
         inform_user "Starting Stanford-core for language: $lang on port: $port"
-        inform_user "$JAVA $JAVA_MEM -Djava.net.preferIPv4Stack=true -cp $scriptdir/\* edu.stanford.nlp.ie.NERServer -port $port -loadClassifier $classifier -outputFormat inlineXML"
-        ($JAVA $JAVA_MEM -Djava.net.preferIPv4Stack=true -cp $scriptdir/\* edu.stanford.nlp.ie.NERServer -port $port -loadClassifier $classifier -outputFormat inlineXML 2>&1) > /dev/null  &
+        inform_user "$JAVA $JAVA_MEM -Djava.net.preferIPv4Stack=true -cp $scriptdir/\* edu.stanford.nlp.ie.NERServer -port $port -loadClassifier $model_path/$classifier -outputFormat inlineXML"
+        ($JAVA $JAVA_MEM -Djava.net.preferIPv4Stack=true -cp $scriptdir/\* edu.stanford.nlp.ie.NERServer -port $port -loadClassifier $model_path/$classifier -outputFormat inlineXML 2>&1) > /dev/null  &
     fi
 done
 
