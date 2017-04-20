@@ -36,8 +36,5 @@ run_test "./narralyzer/lang_lib.py"
 run_test "./narralyzer/utils.py"
 run_test "./narralyzer/config.py"
 
-#duc index .
-#duc ls
-
 convert ./artwork/narralyzer_logo_small.png jpg:- | jp2a --colors --width=100 -
 ) || exit -1

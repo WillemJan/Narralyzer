@@ -31,6 +31,6 @@ setup(
     license='GPLv3',
     name='narralyzer',
     package_dir=[],
-    url='https://www.narralyzer.com/',
+    url='http://kbresearch.nl/narralyzer',
     version=config.get('version'),
 )

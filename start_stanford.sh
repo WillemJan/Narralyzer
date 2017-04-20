@@ -26,15 +26,11 @@ function inform_user() {
 # /Functions
 #------------------------------------------------
 
-inform_user "Changing directory to $($CONFIG stanford_core)"
-cd $($CONFIG stanford_core)
+#inform_user "Changing directory to $($CONFIG stanford_core)"
+#cd $($CONFIG stanford_core)
 
 # Use system wide default java.
 JAVA=$(which java)
-# Except if your hostname "fe2"
-if [ $HOSTNAME == "fe2" ]; then
-    JAVA=/home/aloha/java/bin/java
-fi
 
 java_version=($JAVA -version)
 inform_user "Using java version: $java_version"
@@ -56,7 +52,7 @@ for lang in $($CONFIG supported_languages | xargs); do
     else
         inform_user "Starting Stanford-core for language: $lang on port: $port"
         inform_user "$JAVA $JAVA_MEM -Djava.net.preferIPv4Stack=true -cp $scriptdir/\* edu.stanford.nlp.ie.NERServer -port $port -loadClassifier $model_path/$classifier -outputFormat inlineXML"
-        ($JAVA $JAVA_MEM -Djava.net.preferIPv4Stack=true -cp $scriptdir/\* edu.stanford.nlp.ie.NERServer -port $port -loadClassifier $model_path/$classifier -outputFormat inlineXML 2>&1) > /dev/null  &
+        (($JAVA $JAVA_MEM -Djava.net.preferIPv4Stack=true -cp $scriptdir/\* edu.stanford.nlp.ie.NERServer -port $port -loadClassifier $model_path/$classifier -outputFormat inlineXML 2>&1) > /dev/null) &
     fi
 done
 
@@ -73,6 +69,3 @@ for lang in $($CONFIG supported_languages | xargs); do
         done
     fi
 done
-
-inform_user "Moving to directory where we started"
-cd -

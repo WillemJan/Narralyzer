@@ -142,7 +142,7 @@ fi
 if [ ! -f "site/static/js/codemirror.zip" ]; then
     cd site/static/js/
     get_if_not_there http://codemirror.net/codemirror.zip
-    unzip codemirror.zip 
+    unzip codemirror.zip
     ln -s $(find . -type d | head -2 | tail -1) codemirror
     cd -
 fi
