@@ -7,8 +7,8 @@
 # see: http://github.com/WillemJan/Narralyzer
 #
 
-# If you run into troubles try this: 
-# 
+# If you run into troubles try this:
+#
 # sudo apt-get install -y build-essential libdb-dev virtualenv python2.7 libxml2-dev libxslt1-dev
 #
 # Or leave a ping here: https://www.github.com/WillemJan/Narralyzer
@@ -93,6 +93,9 @@ function fetch_and_install_language_models() {
     inform_user "Fetching and installing language models."
     git submodule init
     git submodule update
+    cd ./language_models/stanford/
+    ./generate_stanford_lang_snapshot.sh
+    ./generate_stanford_ner_snapshot.sh
 }
 
 #--------------------------------------------------------
