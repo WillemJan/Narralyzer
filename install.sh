@@ -96,6 +96,7 @@ function fetch_and_install_language_models() {
     cd ./language_models/stanford/
     ./generate_stanford_lang_snapshot.sh
     ./generate_stanford_ner_snapshot.sh
+    cd -
 }
 
 #--------------------------------------------------------
