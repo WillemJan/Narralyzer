@@ -132,10 +132,12 @@ if [ ! -d "env" ]; then
     inform_user "Upgrade pip and setuptools to latest version."
     pip install --upgrade pip setuptools
 
+
     req=$($CONFIG root)"/requirements.txt"
     if [ -f "$req" ]; then
         inform_user "Running: python2.7 setup.py install"
         python2.7 setup.py install || airbag "Something went wrong while running: python2.7 setup.py install"
+        pip install -r $req
     else
         airbag "Could not find requirements.txt in $req"
     fi
