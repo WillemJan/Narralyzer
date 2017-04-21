@@ -93,10 +93,6 @@ function fetch_and_install_language_models() {
     inform_user "Fetching and installing language models."
     git submodule init
     git submodule update
-    cd ./language_models/stanford/
-    ./generate_stanford_lang_snapshot.sh
-    ./generate_stanford_ner_snapshot.sh
-    cd -
 }
 
 #--------------------------------------------------------
@@ -112,6 +108,12 @@ else
     inform_user "Language model allready available, preforming update"
     git submodule update
 fi
+
+# Install the Stanford NER
+cd ./language_models/stanford/
+./generate_stanford_lang_snapshot.sh
+./generate_stanford_ner_snapshot.sh
+cd -
 
 # Check if the virtual env exists, if not, create one and within
 # the virtual env install the required packages.
