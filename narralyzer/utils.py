@@ -108,6 +108,6 @@ if __name__ == "__main__":
         import doctest
         doctest.testmod(verbose=True)
 
-    from pprint import pprint
-    book = load_test_book('dutch_book_gbid_20060.txt')
-    pprint(book)
+    #from pprint import pprint
+    #book = load_test_book('dutch_book_gbid_20060.txt')
+    #pprint(book)

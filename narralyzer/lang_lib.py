@@ -19,8 +19,12 @@ from langdetect import detect
 from numpy import mean
 from Queue import Queue
 from segtok.segmenter import split_multi
-from stanford_probablepeople_wrapper import stanford_probablepeople_wrapper
 from threading import Thread
+
+try:
+    from narralyzer import stanford_ner_wrapper
+except:
+    import stanford_ner_wrapper
 
 try:
     from narralyzer import config
@@ -42,7 +46,7 @@ class Language:
     The ``lang_lib.Language`` class is part of the Narralyzer project.
     This class takes care of chopping up strings/documents into sentences,
     and applies the following:
-    
+
         - Named entity recogniton (Stanford CoreNLP)
           http://nlp.stanford.edu/software/CRF-NER.shtml
 
@@ -50,17 +54,19 @@ class Language:
                 which might be a nice option as well.
 
         - Part-of-speech tagging (CLiPS-pattern)
-          http://www.clips.ua.ac.be/pattern 
+          http://www.clips.ua.ac.be/pattern
+
                  For this project we've looked at several of those,
                  In Dutch we have the luxory of using either:
-                     http://www.let.rug.nl/vannoord/alp/Alpino/ 
+
+                     http://www.let.rug.nl/vannoord/alp/Alpino/
                      I've seen this one work, but was not able to install it properly.
                      Guess it's a bit outdated. Anyway have no idea how to install it.
 
                      https://languagemachines.github.io/frog/
                      Haven't had time to figuere out a way to use it within my repo,
                      takes a long time to build, but will probably out-preform CLiPS.
-                
+
                 Since our main focus was at the end NER's, CLiPS will do for now.
 
         - Sentence segmentation (segtok.segmenter)
@@ -78,7 +84,7 @@ class Language:
     Using detected language 'en' to parse input text.
     >>> lang.parse()
     >>> from pprint import pprint; pprint(lang.result)
-    {'lang': u'en',
+    {'lang': 'en',
      'sentences': {0: {'count': 0,
                        'pos': [{'string': u'Willem-Jan', 'tag': u'NNP'},
                                {'string': u'Faber', 'tag': u'NNP'},
@@ -99,11 +105,8 @@ class Language:
                                               'tag': 'person'},
                                              {'string': 'West Virginia',
                                               'tag': 'location'}],
-                                    'pp': [{'parse': [('Willem-Jan',
-                                                       'GivenName'),
-                                                      ('Faber', 'Surname')],
-                                            'tag': {'GivenName': 'Willem-Jan',
-                                                    'Surname': 'Faber'}}],
+                                    'pp': [[('Willem-Jan', 'GivenName'),
+                                            ('Faber', 'Surname')]],
                                     'raw_ners': [{'string': 'Willem-Jan Faber',
                                                   'tag': 'person'},
                                                  {'string': 'West Virginia',
@@ -117,10 +120,8 @@ class Language:
                                  'unprintable': 0,
                                  'uppercase': 6},
                        'string': u'Willem-Jan Faber just invoked lang_lib.Language, while wishing he was in West Virginia.'}},
-     'stats': {'avg_length': 87, 'max': 87, 'min': 87},
+     'stats': {'max': 87, 'min': 87, 'total': 87},
      'text': 'Willem-Jan Faber just invoked lang_lib.Language, while wishing he was in West Virginia.'}
-
-    Source code: https://github.com/KBNLresearch/Narralyzer
     '''
     sentences = {}
     stanford_port = 9990
@@ -145,10 +146,10 @@ class Language:
             sys.exit(-1)
 
         detected_lang = False
-        if use_langdetect and not lang:
+        if use_langdetect:
             try:
                 detected_lang = detect(text)
-                if detected_lang not in STANFORD_NER_SERVERS:
+                if detected_lang not in self.config.get('supported_languages'):
                     msg = "Detected language (%s) is not (yet) supported.\n" % detected_lang
                     print(msg)
                 msg = "Using detected language '%s' to parse input text." % detected_lang
@@ -166,7 +167,7 @@ class Language:
             print(msg, lang)
             sys.exit(-1)
 
-        self.stanford_port = STANFORD_NER_SERVERS.get(lang)
+        self.stanford_port = self.config.get('lang_' + lang +'_stanford_port')
 
         pattern = False
         try:
@@ -272,21 +273,23 @@ class Language:
                   "stanford": False,
                   "stats": False}
 
+        # Skip small sentences
         if len(sentence) < 2:
             return result
 
         if self.sentiment_avail:
             result["sentiment"] = self._pattern_sentiment(sentence)
 
-        res = stanford_probablepeople_wrapper(sentence,
-                                              port=self.config.get('models').get(self.lang).get('port'),
-                                              use_pp=True)
+        res = stanford_ner_wrapper.sppw(sentence,
+                                        port=int(self.stanford_port),
+                                        use_pp=True)
 
         pos = []
         for word, pos_tag in self._pattern_tag(sentence):
             pos.append({"string": word, "tag": pos_tag})
 
         result["pos"] = pos
+        result["stanford"] = res
 
         return result
 
@@ -326,12 +329,14 @@ class Language:
         return stats
 
     def stats_all(self):
-        max_len = min_len = 0  # Min and max sentence length.
+        total_len = max_len = min_len = 0  # Total, Min and max sentence length.
         avg = []  # Store all sentence length's.
         for sentence in self.result["sentences"].values():
             # Caluclate the stats per sentence.
             sentence_stats = self.stats_sentence(sentence.get("string"))
             avg.append(sentence_stats.get("count"))
+
+            total_len += sentence_stats.get("count")
 
             if sentence_stats.get("count") > max_len:
                 max_len = sentence_stats.get("count")
@@ -346,10 +351,12 @@ class Language:
 
         # Caluclate the total stats.
         avg_sentence_length = int(round(mean(avg)))
+
         stats = {}
         stats["max"] = max_len
         stats["min"] = min_len
-        stats["total_len"] = all
+        stats["total"] = total_len
+
         self.result["stats"] = stats
 
 if __name__ == '__main__':
@@ -368,6 +375,20 @@ if __name__ == '__main__':
         from pycallgraph.output import GraphvizOutput
 
         if "time" in " ".join(sys.argv):
+            gutenberg_test_id=10
+            text=u"""Charles Perrault must have been as charming a fellow as a man could
+            meet. He was one of the best-liked personages of his own great age,
+            and he has remained ever since a prime favourite of mankind. We are
+            fortunate in knowing a great deal about his varied life, deriving our
+            knowledge mainly from D'Alembert's history of the French Academy and
+            from his own memoirs, which were written for his grandchildren, but
+            not published till sixty-six years after his death. We should, I
+            think, be more fortunate still if the memoirs had not ceased in
+            mid-career, or if their author had permitted himself to write of his
+            family affairs without reserve or restraint, in the approved manner of
+            modern autobiography. We should like, for example, to know much more
+            than we do about the wife and the two sons to whom he was so devoted"""
+
             print("Timing non-threaded lang_lib")
             s = time.time()
             lang = Language(text)
@@ -384,7 +405,7 @@ if __name__ == '__main__':
 
             print("Timing ner-vanilla")
             s = time.time()
-            stanford_ner_wrapper(text, 9992)
+            stanford_ner_wrapper.sppw(text, 9992)
             print("Took %s seconds" % (str(round(s - time.time()) * -1)))
 
             outfile = "../out/%s.pos_ner_sentiment.json" % gutenberg_test_id

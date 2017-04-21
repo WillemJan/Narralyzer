@@ -13,7 +13,7 @@ try:
     from lang_lib import Language
 except:
     log = utils.logger(__file__)
-    log.warn("Did not import sppw and Language")
+    log.warn("Did not import sppw")
 
 
 if __name__ == '__main__':
