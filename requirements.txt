@@ -12,7 +12,7 @@ lxml
 mako
 numpy
 pattern
-probablepeople  
+probablepeople
 pycallgraph
 python-dateutil
 python-magic

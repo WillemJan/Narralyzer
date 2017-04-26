@@ -242,6 +242,6 @@ if __name__ == '__main__':
         from pycallgraph import PyCallGraph
         from pycallgraph.output import GraphvizOutput
 
-        text = smart_text(strip_headers(load_etext(17685)).strip())
+        text = smart_text(strip_headers(load_etext(2701)).strip())
         with PyCallGraph(output=GraphvizOutput()):
             stanford_ner_wrapper(text, 9992, True)

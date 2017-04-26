@@ -30,23 +30,17 @@ def analyze(ner_array, dot, name):
             ner[item] = 0
         else:
             ner[item] += 1
-   
+
     ranks = sorted(ner.items(), key=lambda x: x[1])
     to_remove = []
 
-    '''   
-    for item in ranks:
-        if item[1] < 1:
-            to_remove.append(item[0])
-    '''   
-   
     for item in to_remove:
         ner.pop(item)
-   
+
     person_matrix = {}
-   
+
     interaction_scale = 0
-   
+
     prev_item = ner_array[-1]
     for item in ner:
         person = item
@@ -60,29 +54,25 @@ def analyze(ner_array, dot, name):
                     if person_matrix[person][item] > interaction_scale:
                         interaction_scale = person_matrix[person][item]
             prev_item = item
-   
-    print("SCALE:", interaction_scale)
-    pprint(person_matrix)
-   
     translate_table = {}
-   
+
     i = 0
     for item in person_matrix:
         translate_table[item] = string.letters[i]
         dot.node(string.letters[i], item)
         print(item, string.letters[i])
         i += 1
-   
+
     for item in person_matrix:
         for person in person_matrix[item]:
             if (person_matrix[item][person]):
                 if item in translate_table and person in translate_table:
-                    print(person_matrix[item][person])
-                    #print(translate_table[item])
-                    #print(translate_table[person])
-                    dot.edge(translate_table[item], translate_table[person], color=color_code(person_matrix[item][person], interaction_scale), bgcolor='red', arrowtail='both', label=str(person_matrix[item][person]))
-                    #print(color_code(person_matrix[item][person], interaction_scale))
-                    #print([ translate_table[item]  , translate_table[person] ])
+                    dot.edge(translate_table[item],
+                             translate_table[person],
+                             color=color_code(person_matrix[item][person], interaction_scale),
+                             bgcolor='red',
+                             arrowtail='both',
+                             label=str(person_matrix[item][person]))
     dot.render(name + "_graphviz_", view=False)
 
 def color_code(value, max_value):
@@ -96,6 +86,14 @@ def color_code(value, max_value):
         return 'yellow'
     return 'red'
 
+
+def render_chapter(chapter_nr='0', story_name='test'):
+    name = '%s - chapter %s' % (story_name, chapter_nr)
+    dot = Digraph(comment=name)
+    for ner in person_ners:
+        ner_array.append(ner)
+    analyze(ner_array, dot, "/tmp/" + name)
+
 if __name__ == "__main__":
     name = 'vondel'
 
@@ -106,6 +104,5 @@ if __name__ == "__main__":
     for ner in result.get('ners'):
         if ('per' or 'person') in ner.get('tag'):
             ner_array.append(ner.get('string'))
-    
-    pprint(ner_array)
+
     analyze(ner_array, dot, name)

@@ -6,15 +6,6 @@ sys.path.append(os.path.dirname(__file__))
 VIRT_ENV = os.path.dirname(__file__) + os.sep + "env/bin/activate_this.py"
 execfile(VIRT_ENV, dict(__file__=VIRT_ENV))
 
-#from pprint import pprint
-#import tika
-#from tika import parser
-#parsed = parser.from_file('/data/zevv/shared_stuff/books/0131774298/Expert_C_Programming_-_Deep_C_Secrets.pdf',  'http://localhost:9091/tika')
-#nl=NL()
-#nl.text=parsed["content"]
-#nl.parse()
-#pprint(nl.result)
-
 import codecs
 import datetime
 import magic
@@ -23,6 +14,8 @@ import string
 import sys
 import sys
 import xml.etree.ElementTree as etree
+
+import narralyzer
 
 from collections import Counter
 from dateutil.tz import tzlocal
@@ -49,8 +42,8 @@ ALLOWED_EXTENSIONS = set(['pdf', 'xml', 'txt'])
 
 def tei_to_chapters(fname):
     """ Convert a TEI 2 xml into an array of chapters with text,
-    and return the title.
-    """
+    and return the title. """
+
     data = codecs.open(fname,'r', 'utf-8').read().replace('&nbsp', '')
 
     utf8_parser = etree.XMLParser(encoding='utf-8')
@@ -76,7 +69,7 @@ def tei_to_chapters(fname):
             if item.attrib and item.attrib.get('rend') and \
             item.attrib.get('rend') == 'h3' and not item.text is None:
                 chap_title += '\n' + item.text
- 
+
         if item.tag == 'div':
             if item.attrib and item.attrib.get('type') and \
             item.attrib.get('type') == 'chapter':
@@ -143,8 +136,6 @@ def handle_uploaded_document(uploaded_org_filename, path_uploaded_file):
         parsed = parser.from_file(path_uploaded_file)
         text=parsed["content"]
         print(text)
-        #nl.parse()
-        #pprint(nl.result)
 
     return render_template('file_uploaded.html',
                             filename=uploaded_org_filename,
@@ -187,12 +178,16 @@ def allowed_file(filename):
 
 @application.route('/characters', methods=['GET', 'POST'])
 def characters():
-    return render_template('characters.html', characters=['Klein duimpje',
-                                                          'Repelsteeltje'])
+    chapters = request.args.get('chapters').split(',')
+    text = narralyzer.Language(request.args.get('code'))
+    text.parse()
+    return render_template('characters.html',
+            characters=text.result.get('ners'),
+            chapters=chapters)
+
 @application.route('/analyze', methods=['GET', 'POST'])
 def analyze():
     return render_template('analyze.html')
-
 
 @application.route('/chapters', methods=['GET', 'POST'])
 def chapters():
@@ -214,8 +209,6 @@ def chapters():
             if not (upload_magic.startswith('pdf') or 'unicode text' in upload_magic or upload_magic.startswith('xml')):
                 error = 'Uploaded file type not supported, please upload in pdf, xml(TEI) or txt form. (Got: %s)' % upload_magic
                 return render_template('error.html', val=error)
-
-
             return handle_uploaded_document(upload.filename, path_uploaded_file)
 
         else:
@@ -223,8 +216,6 @@ def chapters():
             return render_template('error.html', val=error)
     else:
         return render_template('chapters.html', raw_text=request.args.get('raw_text'))
-
-
 
 @application.route('/', methods=['GET', 'POST'])
 def index():

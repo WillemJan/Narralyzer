@@ -84,7 +84,8 @@ class Language:
     Using detected language 'en' to parse input text.
     >>> lang.parse()
     >>> from pprint import pprint; pprint(lang.result)
-    {'lang': 'en',
+    {'lang': u'en',
+     'ners': ['Willem-Jan Faber'],
      'sentences': {0: {'count': 0,
                        'pos': [{'string': u'Willem-Jan', 'tag': u'NNP'},
                                {'string': u'Faber', 'tag': u'NNP'},
@@ -132,6 +133,7 @@ class Language:
     use_stats = True
 
     sentiment_avail = True
+
     config = config.Config()
 
     def __init__(self, text=False, lang=False, use_langdetect=True):
@@ -206,6 +208,20 @@ class Language:
 
         if self.use_stats:
             self.stats_all()
+
+        self.result["ners"] = []
+        tmp_ners = []
+
+        #TODO: integrate the results from pp
+        for item in [self.result.get('sentences').get(s).get('stanford') for s in self.result.get('sentences')]:
+            if item and item.get('ners'):
+                for ner in item.get('ners'):
+                    if ner.get('tag') in ['person', 'per']:
+                        self.result["ners"].append(ner.get('string'))
+                        #for n in ner.get('string'):
+                        #    for ner_part in n.split():
+                        #        tmp_ners.append(ner_part)
+
 
     def _parser(self):
         for count, sentence in enumerate(self.result["sentences"].values()):
@@ -376,7 +392,8 @@ if __name__ == '__main__':
 
         if "time" in " ".join(sys.argv):
             gutenberg_test_id=10
-            text=u"""Charles Perrault must have been as charming a fellow as a man could
+            text=u"""Charles Perrault and Henry Perrault must have been
+            as charming a fellow as a man could
             meet. He was one of the best-liked personages of his own great age,
             and he has remained ever since a prime favourite of mankind. We are
             fortunate in knowing a great deal about his varied life, deriving our

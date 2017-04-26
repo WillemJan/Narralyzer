@@ -21,6 +21,7 @@ entry_point = ("""
     config=narralyzer:narralyzer_config
 """)
 
+config = config.Config()
 required = config.get('required')
 
 setup(
