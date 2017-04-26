@@ -134,66 +134,79 @@ class Language:
 
     sentiment_avail = True
 
+    error = False
+
     config = config.Config()
 
     def __init__(self, text=False, lang=False, use_langdetect=True):
         if not text:
             msg = "Did not get any text to look at."
             print(msg)
-            sys.exit(-1)
+            self.error_msg = msg
+            self.error = True
+            #sys.exit(-1)
 
-        if len(text) < 9:
+        if len(text) < 9 and not self.error:
             msg = "Input text is way to small to say something credible about it."
             print(msg)
-            sys.exit(-1)
+            self.error_msg = msg
+            self.error = True
+            #sys.exit(-1)
 
-        detected_lang = False
-        if use_langdetect:
-            try:
-                detected_lang = detect(text)
-                if detected_lang not in self.config.get('supported_languages'):
-                    msg = "Detected language (%s) is not (yet) supported.\n" % detected_lang
+        if not self.error:
+            detected_lang = False
+            if use_langdetect:
+                try:
+                    detected_lang = detect(text)
+                    if detected_lang not in self.config.get('supported_languages'):
+                        msg = "Detected language (%s) is not (yet) supported.\n" % detected_lang
+                        print(msg)
+                    msg = "Using detected language '%s' to parse input text." % detected_lang
                     print(msg)
-                msg = "Using detected language '%s' to parse input text." % detected_lang
+                    lang = detected_lang
+                except:
+                    msg = "Could not automaticly detect language."
+                    print(msg)
+            elif use_langdetect and lang:
+                msg = "Skipping language detection, user specified %s as language" % lang
                 print(msg)
-                lang = detected_lang
-            except:
-                msg = "Could not automaticly detect language."
-                print(msg)
-        elif use_langdetect and lang:
-            msg = "Skipping language detection, user specified %s as language" % lang
-            print(msg)
 
-        if not lang or lang not in self.config.get('supported_languages').lower():
-            msg = "Did not find suitable language to parse text in."
-            print(msg, lang)
-            sys.exit(-1)
+            if not lang or lang not in self.config.get('supported_languages').lower():
+                msg = "Did not find suitable language to parse text in."
+                print(msg, lang)
+                self.error_msg = msg
+                self.error = True
+                #sys.exit(-1)
 
-        self.stanford_port = self.config.get('lang_' + lang +'_stanford_port')
+            if not self.error:
+                self.stanford_port = self.config.get('lang_' + lang +'_stanford_port')
 
-        pattern = False
-        try:
-            pattern = importlib.import_module('pattern.' + lang)
-        except:
-            msg = "Requested language is not (yet) supported, failed to import pattern.%s" % lang
-            print(msg)
-            sys.exit(-1)
+                pattern = False
+                try:
+                    pattern = importlib.import_module('pattern.' + lang)
+                except:
+                    msg = "Requested language is not (yet) supported, failed to import pattern.%s" % lang
+                    self.error = True
+                    self.error_msg = msg
+                    #sys.exit(-1)
 
-        self._pattern_parse = pattern.parse
+                self._pattern_parse = pattern.parse
 
-        try:
-            self._pattern_sentiment = pattern.sentiment
-        except:
-            self.sentiment_avail = False
+                try:
+                    self._pattern_sentiment = pattern.sentiment
+                except:
+                    self.sentiment_avail = False
 
-        self._pattern_tag = pattern.tag
+                self._pattern_tag = pattern.tag
 
-        self.result = {"text": text,
-                       "lang": lang,
-                       "sentences": {},
-                       "stats": {}}
+                self.result = {"text": text,
+                               "lang": lang,
+                               "sentences": {},
+                               "stats": {}}
 
     def parse(self):
+        if self.error:
+            return
         for count, sentence in enumerate(split_multi(self.result["text"])):
             self.result["sentences"][count] = {"string": sentence,
                                                "pos": [],

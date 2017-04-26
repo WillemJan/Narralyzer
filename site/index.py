@@ -178,9 +178,16 @@ def allowed_file(filename):
 
 @application.route('/characters', methods=['GET', 'POST'])
 def characters():
-    chapters = request.args.get('chapters').split(',')
+    try:
+        chapters = request.args.get('chapters').split(',')
+    except:
+        chapters = "0"
     text = narralyzer.Language(request.args.get('code'))
     text.parse()
+    if text.error:
+        return render_template('error.html',
+                error_msg=text.error_msg)
+
     return render_template('characters.html',
             characters=text.result.get('ners'),
             chapters=chapters)
@@ -219,8 +226,8 @@ def chapters():
 
 @application.route('/', methods=['GET', 'POST'])
 def index():
-    if request.method == 'GET' and request.args.get('lang', ''):
-        return render_template('analyze.html')
+    #if request.method == 'GET' and request.args.get('lang', ''):
+    #    return render_template('analyze.html')
 
     return render_template('index.html')
 
