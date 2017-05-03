@@ -11,7 +11,7 @@
    </p>
    <form action="/narralyzer/analyze" id="analyze">
    <input type='hidden' name='text' value="{{ text }}">
-   <input type='hidden' id="characters" name='characters' value='{% for item in characters %}{{item}}{% endfor %}'>
+   <input type='hidden' id="characters" name='characters' value='{% for item in characters %}{{item}},{% endfor %}'>
    <input type='submit' value='submit' method=get>
    <script>
     function enter_task () {

@@ -57,11 +57,17 @@ def analyze(ner_array, dot, name):
     translate_table = {}
 
     i = 0
+    j = 0
     for item in person_matrix:
-        translate_table[item] = string.letters[i]
-        dot.node(string.letters[i], item)
-        print(item, string.letters[i])
+        if j == 0:
+            translate_table[item] = string.letters[i]
+        else:
+            translate_table[item] = string.letters[j] + string.letters[i]
+        dot.node(translate_table[item], item)
         i += 1
+        if i > 51:
+            j += 1
+            i = 0
 
     for item in person_matrix:
         for person in person_matrix[item]:
@@ -73,7 +79,8 @@ def analyze(ner_array, dot, name):
                              bgcolor='red',
                              arrowtail='both',
                              label=str(person_matrix[item][person]))
-    dot.render(name + "_graphviz_", view=False)
+    #dot.render(name + "_graphviz_", view=False)
+    dot.render('/tmp/narralyzer/' + name + '.png', view=False, cleanup=True)
 
 def color_code(value, max_value):
     per = (value * (max_value / 100.0)) * 100
@@ -87,12 +94,10 @@ def color_code(value, max_value):
     return 'red'
 
 
-def render_chapter(chapter_nr='0', story_name='test'):
+def render_chapter(chapter_nr='0', story_name='test', person_ners=[]):
     name = '%s - chapter %s' % (story_name, chapter_nr)
-    dot = Digraph(comment=name)
-    for ner in person_ners:
-        ner_array.append(ner)
-    analyze(ner_array, dot, "/tmp/" + name)
+    dot = Digraph(comment=name, format='png')
+    analyze(person_ners, dot, "/tmp/" + story_name)
 
 if __name__ == "__main__":
     name = 'vondel'

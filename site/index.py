@@ -16,6 +16,7 @@ import sys
 import xml.etree.ElementTree as etree
 
 import narralyzer
+from narralyzer import visualize_ners
 
 from collections import Counter
 from dateutil.tz import tzlocal
@@ -38,7 +39,8 @@ application.template_folder = template_path
 
 mako = MakoTemplates(application)
 
-ALLOWED_EXTENSIONS = set(['pdf', 'xml', 'txt'])
+#ALLOWED_EXTENSIONS = set(['pdf', 'xml', 'txt'])
+ALLOWED_EXTENSIONS = set(['xml'])
 
 def tei_to_chapters(fname):
     """ Convert a TEI 2 xml into an array of chapters with text,
@@ -129,7 +131,6 @@ def handle_uploaded_document(uploaded_org_filename, path_uploaded_file):
             ftype = 'xml (other)'
         author, title, chapters, all_text = tei_to_chapters(path_uploaded_file)
 
-
     text = narralyzer.Language(all_text)
     text.parse()
 
@@ -137,10 +138,10 @@ def handle_uploaded_document(uploaded_org_filename, path_uploaded_file):
         return render_template('error.html',
                 error_msg=text.error_msg)
 
-
     return render_template('characters.html',
             characters=text.result.get('ners'),
-            chapters=chapters)
+            chapters=chapters,
+            text=all_text)
 
 class Narrative():
     titles = []
@@ -184,14 +185,18 @@ def characters():
         return render_template('error.html',
                 error_msg=text.error_msg)
 
-
     return render_template('characters.html',
             characters=text.result.get('ners'),
-            chapters=chapters)
+            chapters=chapters,
+            text=all_text)
 
 @application.route('/analyze', methods=['GET', 'POST'])
 def analyze():
-    return render_template('analyze.html')
+    characters = []
+    for char in request.args.get('characters').split(','):
+        characters.append(char)
+    visualize_ners.render_chapter(0,'test', characters)
+    return render_template('analyze.html', c='')
 
 @application.route('/chapters', methods=['GET', 'POST'])
 def chapters():
@@ -223,10 +228,7 @@ def chapters():
 
 @application.route('/', methods=['GET', 'POST'])
 def index():
-    #if request.method == 'GET' and request.args.get('lang', ''):
-    #    return render_template('analyze.html')
-
     return render_template('index.html')
 
 if __name__ == "__main__":
-    application.run(threaded=True, port=60606, host="fe2")
+    application.run(threaded=True, debug=True, port=60606, host="kbresearch.nl")
