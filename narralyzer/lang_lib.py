@@ -127,8 +127,8 @@ class Language:
     sentences = {}
     stanford_port = 9990
 
-    use_threads = False
-    nr_of_threads = 10
+    use_threads = True
+    nr_of_threads = 16
 
     use_stats = True
 

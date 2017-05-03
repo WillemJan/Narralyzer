@@ -3,7 +3,6 @@
 '''
     narralyzer.config
     ~~~~~~~~~~~~~~~~~
-
     Handle misc config variables.
 
     :copyright: (c) 2016 Koninklijke Bibliotheek, by Willem-Jan Faber.

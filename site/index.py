@@ -49,6 +49,7 @@ def tei_to_chapters(fname):
     utf8_parser = etree.XMLParser(encoding='utf-8')
     book = etree.fromstring(data.encode('utf-8'), parser=utf8_parser)
 
+    all_text = u""
     chapters = []
     chap_title = ''
     text = ''
@@ -73,6 +74,7 @@ def tei_to_chapters(fname):
         if item.tag == 'div':
             if item.attrib and item.attrib.get('type') and \
             item.attrib.get('type') == 'chapter':
+                all_text += text
                 chapters.append([chap_title, text])
                 text = ''
                 chap_title = ''
@@ -83,7 +85,7 @@ def tei_to_chapters(fname):
             text += item.text + "\n"
 
     chapters.append([chap_title, text])
-    return author, title, chapters
+    return author, title, chapters, all_text
 
 def tei_check(path_to_file):
     """ Returns true if the file is an TEI-xml
@@ -125,27 +127,20 @@ def handle_uploaded_document(uploaded_org_filename, path_uploaded_file):
             ftype = 'xml (TEI 2)'
         else:
             ftype = 'xml (other)'
-        author, title, chapters = tei_to_chapters(path_uploaded_file)
+        author, title, chapters, all_text = tei_to_chapters(path_uploaded_file)
 
 
-    if uploaded_org_filename.lower().endswith('txt'):
-        ftype = 'txt'
+    text = narralyzer.Language(all_text)
+    text.parse()
 
-    if uploaded_org_filename.lower().endswith('pdf'):
-        ftype = 'pdf'
-        parsed = parser.from_file(path_uploaded_file)
-        text=parsed["content"]
-        print(text)
+    if text.error:
+        return render_template('error.html',
+                error_msg=text.error_msg)
 
-    return render_template('file_uploaded.html',
-                            filename=uploaded_org_filename,
-                            ftype=ftype,
-                            datetime=now,
-                            filesize=len(data),
-                            t_ascii_letters=t_ascii_letters,
-                            t_punct_letters=t_punct_letters,
-                            t_noise_letters=t_noise_letters,
-                            narrative="narrative")
+
+    return render_template('characters.html',
+            characters=text.result.get('ners'),
+            chapters=chapters)
 
 class Narrative():
     titles = []
@@ -184,9 +179,11 @@ def characters():
         chapters = "0"
     text = narralyzer.Language(request.args.get('code'))
     text.parse()
+
     if text.error:
         return render_template('error.html',
                 error_msg=text.error_msg)
+
 
     return render_template('characters.html',
             characters=text.result.get('ners'),
