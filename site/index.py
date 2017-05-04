@@ -108,40 +108,30 @@ def handle_uploaded_document(uploaded_org_filename, path_uploaded_file):
     now = str(datetime.datetime.now(tzlocal())).split('.')[:-1][0]
     data = codecs.open(path_uploaded_file,'r', 'utf-8').read()
 
-    t_ascii_letters = 0
-    t_punct_letters = 0
-    t_noise_letters = 0
-
-    for j in data:
-        if j in string.ascii_letters or j in string.digits:
-            t_ascii_letters += 1
-
-    for j in data:
-        if j in string.punctuation:
-            t_punct_letters += 1
-
-    for j in data:
-        if j not in string.printable:
-            t_noise_letters += 1
-
     if uploaded_org_filename.lower().endswith('xml'):
         if tei_check(path_uploaded_file):
             ftype = 'xml (TEI 2)'
+            author, title, chapters, all_text = tei_to_chapters(path_uploaded_file)
         else:
-            ftype = 'xml (other)'
-        author, title, chapters, all_text = tei_to_chapters(path_uploaded_file)
+            error_msg = 'Uploaded xml file not a TEI file.'
+            return render_template('error.html',
+                    error_msg=error_msg)
 
-    text = narralyzer.Language(all_text)
-    text.parse()
+    ner_per_chapter = []
+
+    for chapter in chapters:
+        text = narralyzer.Language(chapter[1])
+        text.parse()
+        ner_per_chapter.append(soreted(set(text.result.get('ners'))))
 
     if text.error:
         return render_template('error.html',
                 error_msg=text.error_msg)
 
     return render_template('characters.html',
+            chapters=['1','2','3'],
             characters=text.result.get('ners'),
-            chapters=chapters,
-            text=all_text)
+            text=chapters[3][1])
 
 class Narrative():
     titles = []
@@ -186,8 +176,11 @@ def characters():
                 error_msg=text.error_msg)
 
     return render_template('characters.html',
+            chapters=['1','2','3'],
+            #sorted_characters=
+            #sorted(set(text.result.get('ners'))),
             characters=text.result.get('ners'),
-            chapters=chapters,
+            #chapters=chapters,
             text=all_text)
 
 @application.route('/analyze', methods=['GET', 'POST'])
