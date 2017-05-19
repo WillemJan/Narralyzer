@@ -22,7 +22,16 @@ from graphviz import Digraph
 from pprint import pprint
 
 
-def analyze(ner_array, dot, name):
+#TODO: the incomming name array should be re-constructed,
+# for it is a merged list as input, and we want to iterate over
+# the complete chapter again to make sure we get the interactions drawn,
+# not a single compressed list of characters.
+
+#TODO: grab the output path from narralyzer config
+
+def analyze(ner_array, dot, filename, source_narrative=['chapter1.txt', 'chapter2.txt', 'chapter3.txt']):
+    # The incoming list should be re-run through the text..
+
     ner = {}
     print("Total nr of NER's: %i " % len(ner_array))
     for item in ner_array:
@@ -79,8 +88,8 @@ def analyze(ner_array, dot, name):
                              bgcolor='red',
                              arrowtail='both',
                              label=str(person_matrix[item][person]))
-    #dot.render(name + "_graphviz_", view=False)
-    dot.render('/tmp/narralyzer/' + name + '.png', view=False, cleanup=True)
+
+    dot.render(filename, view=False, cleanup=True)
 
 def color_code(value, max_value):
     per = (value * (max_value / 100.0)) * 100
@@ -94,10 +103,9 @@ def color_code(value, max_value):
     return 'red'
 
 
-def render_chapter(chapter_nr='0', story_name='test', person_ners=[]):
-    name = '%s - chapter %s' % (story_name, chapter_nr)
+def render_chapter(chapter_nr='0', name='test', ner_array=[]):
     dot = Digraph(comment=name, format='png')
-    analyze(person_ners, dot, "/tmp/" + story_name)
+    analyze(ner_array, dot, "/var/www/narralyzer/static/output/" + name)
 
 if __name__ == "__main__":
     name = 'vondel'

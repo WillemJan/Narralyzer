@@ -3,16 +3,14 @@
    <div sytle='width: 80%; margin: 0 auto;'>
        <h3>Please correct the characters</h3>
        That play a mayor role in the narrative.
-   <input type="text" id="enter_task" placeholder="Enter character name">
-   <input type="submit" id="add" value="Add character">
    <p>
      <ul id="todo_list">
      </ul>
    </p>
    <form action="/narralyzer/analyze" id="analyze">
-   <input type='hidden' name='text' value="{{ text }}">
+   <input type='hidden' name='filename' value="{{ filename }}">
    <input type='hidden' id="characters" name='characters' value='{% for item in characters %}{{item}},{% endfor %}'>
-   <input type='submit' value='submit' method=get>
+   <input type='submit' value='generate images' method=get>
    <script>
     function enter_task () {
         var text = $('#enter_task').val();
@@ -35,42 +33,33 @@
     {% for item in sorted_characters %}
         $('#todo_list').append('<li> {{item}} <input type="submit" class="edit" value="Edit">' + '<input type="submit" class="done delete" value="Delete">' +'</li>');
     {% endfor %}
-
-
-
    </script>
    <br><br>
 
    </form>
    </div>
-
-
-
 <div id="tabs">
   <ul>
-    <li><a href="#fragment-1"><span>One</span></a></li>
-    <li><a href="#fragment-2"><span>Two</span></a></li>
-    <li><a href="#fragment-3"><span>Three</span></a></li>
+   {% for char in characters %}
+   <li><a href="#fragment-{{loop.index}}"><span>{{loop.index}}</span></a></li>
+   {% endfor %}
   </ul>
-  <div id="fragment-1">
-    <p>First tab is active by default:</p>
-    <pre><code>$( "#tabs" ).tabs(); </code></pre>
+  {% for char in characters %}
+  <div id="fragment-{{loop.index}}">
+      {% if not char %}
+        This chapter does not contain recognized characters.
+      {% else %}
+      {% for name in  char %}
+          {{ name }} <br/>
+      {% endfor %}
+
+      {% endif %}
   </div>
-  <div id="fragment-2">
-    Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
-    Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
-  </div>
-  <div id="fragment-3">
-    Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
-    Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
-    Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
-  </div>
+  {% endfor %}
 </div>
 
 <script>
 $("#tabs").tabs();
 </script>
-
-
 
 {% endblock %}

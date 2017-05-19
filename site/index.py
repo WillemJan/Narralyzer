@@ -14,6 +14,7 @@ import string
 import sys
 import sys
 import xml.etree.ElementTree as etree
+import urllib
 
 import narralyzer
 from narralyzer import visualize_ners
@@ -105,9 +106,6 @@ def tei_check(path_to_file):
     return False
 
 def handle_uploaded_document(uploaded_org_filename, path_uploaded_file):
-    now = str(datetime.datetime.now(tzlocal())).split('.')[:-1][0]
-    data = codecs.open(path_uploaded_file,'r', 'utf-8').read()
-
     if uploaded_org_filename.lower().endswith('xml'):
         if tei_check(path_uploaded_file):
             ftype = 'xml (TEI 2)'
@@ -120,18 +118,18 @@ def handle_uploaded_document(uploaded_org_filename, path_uploaded_file):
     ner_per_chapter = []
 
     for chapter in chapters:
+        # Apply narralyzer to text, (the first element is chapter name)
         text = narralyzer.Language(chapter[1])
         text.parse()
-        ner_per_chapter.append(soreted(set(text.result.get('ners'))))
-
-    if text.error:
-        return render_template('error.html',
-                error_msg=text.error_msg)
+        if not text.error:
+            # TODO: enable next line, later on in the analyze step,
+            # walk over all the text to redo-analysis.
+            #ner_per_chapter.append(sorted(set(text.result.get('ners'))))
+            ner_per_chapter.append(text.result.get('ners'))
 
     return render_template('characters.html',
-            chapters=['1','2','3'],
-            characters=text.result.get('ners'),
-            text=chapters[3][1])
+            characters=ner_per_chapter,
+            filename=uploaded_org_filename)
 
 class Narrative():
     titles = []
@@ -164,35 +162,6 @@ def allowed_file(filename):
 
 @application.route('/characters', methods=['GET', 'POST'])
 def characters():
-    try:
-        chapters = request.args.get('chapters').split(',')
-    except:
-        chapters = "0"
-    text = narralyzer.Language(request.args.get('code'))
-    text.parse()
-
-    if text.error:
-        return render_template('error.html',
-                error_msg=text.error_msg)
-
-    return render_template('characters.html',
-            chapters=['1','2','3'],
-            #sorted_characters=
-            #sorted(set(text.result.get('ners'))),
-            characters=text.result.get('ners'),
-            #chapters=chapters,
-            text=all_text)
-
-@application.route('/analyze', methods=['GET', 'POST'])
-def analyze():
-    characters = []
-    for char in request.args.get('characters').split(','):
-        characters.append(char)
-    visualize_ners.render_chapter(0,'test', characters)
-    return render_template('analyze.html', c='')
-
-@application.route('/chapters', methods=['GET', 'POST'])
-def chapters():
     if request.method == 'POST':
         upload = request.files['file']
 
@@ -211,13 +180,57 @@ def chapters():
             if not (upload_magic.startswith('pdf') or 'unicode text' in upload_magic or upload_magic.startswith('xml')):
                 error = 'Uploaded file type not supported, please upload in pdf, xml(TEI) or txt form. (Got: %s)' % upload_magic
                 return render_template('error.html', val=error)
-            return handle_uploaded_document(upload.filename, path_uploaded_file)
+            return handle_uploaded_document(secure_filename(upload.filename), path_uploaded_file)
 
         else:
             error = 'Error: Did not recieve valid file, filename must end with either .xml, .pdf or .txt'
             return render_template('error.html', val=error)
     else:
-        return render_template('chapters.html', raw_text=request.args.get('raw_text'))
+        try:
+            chapters = request.args.get('chapters').split(',')
+        except:
+            chapters = "0"
+
+        text = narralyzer.Language(request.args.get('code'))
+        text.parse()
+
+        if text.error:
+            return render_template('error.html',
+                    error_msg=text.error_msg)
+
+        # TODO: write data to disk, and generate a filename
+        return render_template('characters.html',
+                chapters=['1','2','3'],
+                #sorted_characters=
+                #sorted(set(text.result.get('ners'))),
+                characters=text.result.get('ners'),
+                filename='uploaded text',
+                #chapters=chapters,
+                text=all_text)
+
+@application.route('/analyze', methods=['GET', 'POST'])
+def analyze():
+    characters = []
+    name = secure_filename(request.args.get('filename').split('.')[0])
+
+    import ast
+
+    input_characters = ast.literal_eval(urllib.unquote(request.args.get('characters').decode('utf8')))
+
+    #fh=open('/tmp/dump.txt', 'w')
+    #fh.write(urllib.unquote(request.args.get('characters').decode('utf8')))
+    #fh.close()
+
+    for char in input_characters:
+        for i in char:
+            characters.append(i)
+
+    visualize_ners.render_chapter(0, name, characters)
+    return render_template('analyze.html', output=name)
+
+@application.route('/chapters', methods=['GET', 'POST'])
+def chapters():
+    return render_template('chapters.html', raw_text=request.args.get('raw_text'))
 
 @application.route('/', methods=['GET', 'POST'])
 def index():
