@@ -1,8 +1,15 @@
 {% extends "main.html" %}
 {% block body %}
 <h3>Analysis results</h3>
+<a href='/narralyzer/'>Restart</a><br/>
 
-<img src='static/output/{{ output }}.png' width=1000 height=1000>
+
+{% for i in range(counter) %}
+<img src='static/output/{{ output }}_{{ i }}.png' width="%100" style='max-width:1000px;'><br>
+{% endfor %}
+
+<br>
+<img src='static/output/{{ output }}_all.png' width="%100" style='max-width:1000px;'>
 
 
 

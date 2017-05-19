@@ -6,6 +6,7 @@ sys.path.append(os.path.dirname(__file__))
 VIRT_ENV = os.path.dirname(__file__) + os.sep + "env/bin/activate_this.py"
 execfile(VIRT_ENV, dict(__file__=VIRT_ENV))
 
+import ast
 import codecs
 import datetime
 import magic
@@ -210,23 +211,27 @@ def characters():
 
 @application.route('/analyze', methods=['GET', 'POST'])
 def analyze():
-    characters = []
-    name = secure_filename(request.args.get('filename').split('.')[0])
+    # Combine all characters from all chapters into one long list
+    all_characters = []
 
-    import ast
+    name = secure_filename(request.args.get('filename').split('.')[0])
 
     input_characters = ast.literal_eval(urllib.unquote(request.args.get('characters').decode('utf8')))
 
-    #fh=open('/tmp/dump.txt', 'w')
-    #fh.write(urllib.unquote(request.args.get('characters').decode('utf8')))
-    #fh.close()
-
+    counter = 1
     for char in input_characters:
+        characters = []
         for i in char:
+            all_characters.append(i)
             characters.append(i)
+        visualize_ners.render_chapter(0, name + str(counter), characters)
+        counter += 1
 
-    visualize_ners.render_chapter(0, name, characters)
-    return render_template('analyze.html', output=name)
+    visualize_ners.render_chapter(0, name + '_all', all_characters)
+
+
+
+    return render_template('analyze.html', output=name, counter=counter)
 
 @application.route('/chapters', methods=['GET', 'POST'])
 def chapters():

@@ -93,7 +93,6 @@ def analyze(ner_array, dot, filename, source_narrative=['chapter1.txt', 'chapter
 
 def color_code(value, max_value):
     per = (value * (max_value / 100.0)) * 100
-    print(per)
     if per < 25.0:
         return 'green'
     if per < 50.0:
@@ -109,7 +108,6 @@ def render_chapter(chapter_nr='0', name='test', ner_array=[]):
 
 if __name__ == "__main__":
     name = 'vondel'
-
     dot = Digraph(comment=name)
     ner_array = []
     result = stanford_ner_wrapper(data, 9991)
