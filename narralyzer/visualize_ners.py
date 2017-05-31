@@ -30,7 +30,9 @@ from pprint import pprint
 #TODO: grab the output path from narralyzer config
 
 def analyze(ner_array, dot, filename, source_narrative=['chapter1.txt', 'chapter2.txt', 'chapter3.txt']):
-    # The incoming list should be re-run through the text..
+
+    if not ner_array:
+        return
 
     ner = {}
     print("Total nr of NER's: %i " % len(ner_array))

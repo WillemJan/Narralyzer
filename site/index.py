@@ -1,6 +1,6 @@
 #!/usr/bin/env python2.7
-
-import os, sys
+import os
+import sys
 
 sys.path.append(os.path.dirname(__file__))
 VIRT_ENV = os.path.dirname(__file__) + os.sep + "env/bin/activate_this.py"
@@ -10,10 +10,7 @@ import ast
 import codecs
 import datetime
 import magic
-import os
 import string
-import sys
-import sys
 import xml.etree.ElementTree as etree
 import urllib
 
@@ -164,6 +161,7 @@ def allowed_file(filename):
 @application.route('/characters', methods=['GET', 'POST'])
 def characters():
     if request.method == 'POST':
+        # Handle TEI files
         upload = request.files['file']
 
         if upload and allowed_file(upload.filename):
@@ -187,50 +185,41 @@ def characters():
             error = 'Error: Did not recieve valid file, filename must end with either .xml, .pdf or .txt'
             return render_template('error.html', val=error)
     else:
+        # Handle freetext
+        ner_per_chapter = []
         try:
             chapters = request.args.get('chapters').split(',')
         except:
             chapters = "0"
 
-        text = narralyzer.Language(request.args.get('code'))
-        text.parse()
+        all_text = narralyzer.Language(request.args.get('code'))
+        all_text.parse()
 
-        if text.error:
+        if all_text.error:
             return render_template('error.html',
                     error_msg=text.error_msg)
 
-        # TODO: write data to disk, and generate a filename
+        ner_per_chapter.append(all_text.result.get('ners'))
+
         return render_template('characters.html',
-                chapters=['1','2','3'],
-                #sorted_characters=
-                #sorted(set(text.result.get('ners'))),
-                characters=text.result.get('ners'),
-                filename='uploaded text',
-                #chapters=chapters,
-                text=all_text)
+                characters=ner_per_chapter,
+                filename='Uploaded from file')
 
 @application.route('/analyze', methods=['GET', 'POST'])
 def analyze():
     # Combine all characters from all chapters into one long list
     all_characters = []
-
     name = secure_filename(request.args.get('filename').split('.')[0])
-
     input_characters = ast.literal_eval(urllib.unquote(request.args.get('characters').decode('utf8')))
-
     counter = 1
     for char in input_characters:
         characters = []
         for i in char:
             all_characters.append(i)
             characters.append(i)
-        visualize_ners.render_chapter(0, name + str(counter), characters)
+        visualize_ners.render_chapter(0, name + "_" + str(counter), characters)
         counter += 1
-
     visualize_ners.render_chapter(0, name + '_all', all_characters)
-
-
-
     return render_template('analyze.html', output=name, counter=counter)
 
 @application.route('/chapters', methods=['GET', 'POST'])
