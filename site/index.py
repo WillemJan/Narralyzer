@@ -8,21 +8,18 @@ execfile(VIRT_ENV, dict(__file__=VIRT_ENV))
 
 import ast
 import codecs
-import datetime
 import magic
-import string
 import xml.etree.ElementTree as etree
 import urllib
+import random
 
 import narralyzer
 from narralyzer import visualize_ners
 
 from collections import Counter
-from dateutil.tz import tzlocal
 from flask import *
 from flask_mako import MakoTemplates
 from langdetect import detect
-from time import gmtime, strftime
 from werkzeug import secure_filename
 
 UPLOAD_FOLDER = '/var/www/narralyzer/upload'
@@ -33,7 +30,7 @@ application = Flask(__name__)
 application.debug = True
 application.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-template_path =  os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
+template_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 application.template_folder = template_path
 
 mako = MakoTemplates(application)
@@ -41,11 +38,12 @@ mako = MakoTemplates(application)
 #ALLOWED_EXTENSIONS = set(['pdf', 'xml', 'txt'])
 ALLOWED_EXTENSIONS = set(['xml'])
 
+
 def tei_to_chapters(fname):
     """ Convert a TEI 2 xml into an array of chapters with text,
     and return the title. """
 
-    data = codecs.open(fname,'r', 'utf-8').read().replace('&nbsp', '')
+    data = codecs.open(fname, 'r', 'utf-8').read().replace('&nbsp', '')
 
     utf8_parser = etree.XMLParser(encoding='utf-8')
     book = etree.fromstring(data.encode('utf-8'), parser=utf8_parser)
@@ -88,30 +86,30 @@ def tei_to_chapters(fname):
     chapters.append([chap_title, text])
     return author, title, chapters, all_text
 
+
 def tei_check(path_to_file):
     """ Returns true if the file is an TEI-xml
-    The following part of the header must be found in the first 10 lines of the file.
+    The following part of the header must be found
+     in the first 10 lines of the file.
     <!DOCTYPE TEI.2 PUBLIC ....
     """
-    i=0
 
     fh = open(path_to_file, 'r')
     for i in range(9):
         data = fh.readline().encode('utf-8')
         if '<!DOCTYPE TEI.2 PUBLIC' in data:
             return True
-
     return False
+
 
 def handle_uploaded_document(uploaded_org_filename, path_uploaded_file):
     if uploaded_org_filename.lower().endswith('xml'):
         if tei_check(path_uploaded_file):
-            ftype = 'xml (TEI 2)'
             author, title, chapters, all_text = tei_to_chapters(path_uploaded_file)
         else:
             error_msg = 'Uploaded xml file not a TEI file.'
             return render_template('error.html',
-                    error_msg=error_msg)
+                                   error_msg=error_msg)
 
     ner_per_chapter = []
 
@@ -120,14 +118,12 @@ def handle_uploaded_document(uploaded_org_filename, path_uploaded_file):
         text = narralyzer.Language(chapter[1])
         text.parse()
         if not text.error:
-            # TODO: enable next line, later on in the analyze step,
-            # walk over all the text to redo-analysis.
-            #ner_per_chapter.append(sorted(set(text.result.get('ners'))))
             ner_per_chapter.append(text.result.get('ners'))
 
     return render_template('characters.html',
             characters=ner_per_chapter,
             filename=uploaded_org_filename)
+
 
 class Narrative():
     titles = []
@@ -152,11 +148,14 @@ class Narrative():
         self.lang = Counter(lang).most_common()[0][0]
 
     def __repr__(self):
-        return ('Narrative: %s, consisting of %s chapters.' % (self.title, len(self.chapters)))
+        return ('Narrative: %s, consisting of %s chapters.' % (
+                self.title, len(self.chapters)))
+
 
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 @application.route('/characters', methods=['GET', 'POST'])
 def characters():
@@ -186,24 +185,47 @@ def characters():
             return render_template('error.html', val=error)
     else:
         # Handle freetext
-        ner_per_chapter = []
         try:
             chapters = request.args.get('chapters').split(',')
+            chap = [int(c) for c in chapters]
         except:
-            chapters = "0"
+            chapters = False
 
-        all_text = narralyzer.Language(request.args.get('code'))
-        all_text.parse()
+        all_text = request.args.get('code')
+        ner_per_chapter = []
 
-        if all_text.error:
-            return render_template('error.html',
-                    error_msg=text.error_msg)
+        if chapters and len(chapters) >= 1:
+            current_chapter = ''
+            for (i, item) in enumerate(all_text.split('\n')):
+                current_chapter += item
+                if i in chap:
+                    ners = narralyzer.Language(current_chapter)
+                    ners.parse()
+                    try:
+                        ner_per_chapter.append(ners.result.get('ners'))
+                    except:
+                        ner_per_chapter.append([])
+                    current_chapter = ''
+            ners = narralyzer.Language(current_chapter)
+            ners.parse()
+            try:
+                ner_per_chapter.append(ners.result.get('ners'))
+            except:
+                ner_per_chapter.append([])
+        else:
+            ners = narralyzer.Language(all_text)
+            ners.parse()
+            try:
+                ner_per_chapter.append(ners.result.get('ners'))
+            except:
+                ner_per_chapter.append([])
 
-        ner_per_chapter.append(all_text.result.get('ners'))
+        #ner_per_chapter.append(all_text.result.get('ners'))
 
         return render_template('characters.html',
                 characters=ner_per_chapter,
                 filename='Uploaded from file')
+
 
 @application.route('/analyze', methods=['GET', 'POST'])
 def analyze():
@@ -220,11 +242,15 @@ def analyze():
         visualize_ners.render_chapter(0, name + "_" + str(counter), characters)
         counter += 1
     visualize_ners.render_chapter(0, name + '_all', all_characters)
-    return render_template('analyze.html', output=name, counter=counter)
+    rnd = str(random.random())
+
+    return render_template('analyze.html', rnd=rnd, output=name, counter=counter)
+
 
 @application.route('/chapters', methods=['GET', 'POST'])
 def chapters():
     return render_template('chapters.html', raw_text=request.args.get('raw_text'))
+
 
 @application.route('/', methods=['GET', 'POST'])
 def index():

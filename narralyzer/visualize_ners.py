@@ -22,13 +22,7 @@ from graphviz import Digraph
 from pprint import pprint
 
 
-#TODO: the incomming name array should be re-constructed,
-# for it is a merged list as input, and we want to iterate over
-# the complete chapter again to make sure we get the interactions drawn,
-# not a single compressed list of characters.
-
 #TODO: grab the output path from narralyzer config
-
 def analyze(ner_array, dot, filename, source_narrative=['chapter1.txt', 'chapter2.txt', 'chapter3.txt']):
 
     if not ner_array:
