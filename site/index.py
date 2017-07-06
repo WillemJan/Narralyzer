@@ -35,9 +35,7 @@ application.template_folder = template_path
 
 mako = MakoTemplates(application)
 
-#ALLOWED_EXTENSIONS = set(['pdf', 'xml', 'txt'])
 ALLOWED_EXTENSIONS = set(['xml'])
-
 
 def tei_to_chapters(fname):
     """ Convert a TEI 2 xml into an array of chapters with text,
@@ -57,7 +55,8 @@ def tei_to_chapters(fname):
     for item in book.iter():
         if item.tag == 'author':
             author = item.text
-        if item.tag == 'title' and not title and item.attrib.get('type') and item.attrib.get('type') == 'main':
+        if item.tag == 'title' and not title and \
+                item.attrib.get('type') and item.attrib.get('type') == 'main':
             title = item.text
 
         if item.tag == 'head':
@@ -118,6 +117,7 @@ def handle_uploaded_document(uploaded_org_filename, path_uploaded_file):
         text = narralyzer.Language(chapter[1])
         text.parse()
         if not text.error:
+            text.aura()
             ner_per_chapter.append(text.result.get('ners'))
 
     return render_template('characters.html',
@@ -194,7 +194,7 @@ def characters():
         all_text = request.args.get('code')
         ner_per_chapter = []
 
-        if chapters and len(chapters) >= 1:
+        if chapters and len(chap) >= 1:
             current_chapter = ''
             for (i, item) in enumerate(all_text.split('\n')):
                 current_chapter += item
@@ -202,12 +202,22 @@ def characters():
                     ners = narralyzer.Language(current_chapter)
                     ners.parse()
                     try:
+                        ners.aura()
+                    except:
+                        pass
+                    try:
                         ner_per_chapter.append(ners.result.get('ners'))
                     except:
                         ner_per_chapter.append([])
                     current_chapter = ''
+
             ners = narralyzer.Language(current_chapter)
             ners.parse()
+
+            try:
+                ners.aura()
+            except:
+                pass
             try:
                 ner_per_chapter.append(ners.result.get('ners'))
             except:
@@ -217,10 +227,9 @@ def characters():
             ners.parse()
             try:
                 ner_per_chapter.append(ners.result.get('ners'))
+                ners.aura()
             except:
                 ner_per_chapter.append([])
-
-        #ner_per_chapter.append(all_text.result.get('ners'))
 
         return render_template('characters.html',
                 characters=ner_per_chapter,
@@ -243,7 +252,6 @@ def analyze():
         counter += 1
     visualize_ners.render_chapter(0, name + '_all', all_characters)
     rnd = str(random.random())
-
     return render_template('analyze.html', rnd=rnd, output=name, counter=counter)
 
 

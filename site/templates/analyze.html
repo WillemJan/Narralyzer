@@ -3,8 +3,9 @@
 <h3>Analysis results</h3>
 <a href='/narralyzer/'>Restart</a><br/>
 {% for i in range(1, counter) %}
-Chapter {{ i }}<br>
+<b>Chapter {{ i }}</b><br>
 <img src='static/output/{{ output }}_{{ i }}.png?{{ rnd }}' width="%100" style='max-width:1000px;'><br>
+<hr><br>
 {% endfor %}
 <br>
 All chapters as one:<br>

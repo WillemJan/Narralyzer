@@ -176,7 +176,6 @@ class Language:
                 print(msg, lang)
                 self.error_msg = msg
                 self.error = True
-                #sys.exit(-1)
 
             if not self.error:
                 self.stanford_port = self.config.get('lang_' + lang +'_stanford_port')
@@ -188,7 +187,6 @@ class Language:
                     msg = "Requested language is not (yet) supported, failed to import pattern.%s" % lang
                     self.error = True
                     self.error_msg = msg
-                    #sys.exit(-1)
 
                 self._pattern_parse = pattern.parse
 
@@ -231,9 +229,48 @@ class Language:
                 for ner in item.get('ners'):
                     if ner.get('tag') in ['person', 'per']:
                         self.result["ners"].append(ner.get('string'))
-                        #for n in ner.get('string'):
-                        #    for ner_part in n.split():
-                        #        tmp_ners.append(ner_part)
+
+
+    def aura(self):
+        sentences_buffer = []
+        current = {}
+        aura = {}
+
+        AURA_SIZE = 5
+
+        for sentence in sorted(self.result["sentences"]):
+            sentences_buffer.append(self.result["sentences"][sentence].get("string"))
+
+            # Fetch items after the mention of a character.
+            remove = []
+            for item in current:
+                if current[item] > 0:
+                    current[item] -= 1
+                    aura[item].append(sentences_buffer[-1])
+                else:
+                    remove.append(item)
+
+            for item in remove:
+                current.pop(item)
+
+            # Fetch items in front of the mentions of a character.
+            if not self.result["sentences"][sentence].get('stanford'):
+                continue
+            for item in self.result["sentences"][sentence].get('stanford').get('ners'):
+                if item.get('tag').startswith('per'):
+                    if item.get('string') and not item.get('sting') in aura:
+                        if not item.get('string') in aura:
+                            aura[item.get('string')] = []
+                        for line in sentences_buffer[-AURA_SIZE / 2:]:
+                            if not line in aura[item.get('string')]:
+                                aura[item.get('string')].append(line)
+                        current[item.get('string')] = AURA_SIZE / 2
+
+        import json
+        with open("/tmp/out.json", "w") as fh:
+            fh.write(json.dumps(aura))
+
+
 
 
     def _parser(self):
