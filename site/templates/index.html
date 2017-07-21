@@ -1,17 +1,35 @@
 {% extends "main.html" %}
 {% block body %}
+<div style="width: 100%; overflow: hidden;">
 
-<h3>Paste your text here and press submit</h3>
-<br><br>
-<form action="/narralyzer/chapters" method=get>
-    <textarea rows="4" cols="50" style="margin-left: 100px;" name="raw_text"></textarea><br>
-    <input type=submit value=Submit style="margin-left: 250px;">
-</form>
-<h3>Or upload a <a href='https://en.wikipedia.org/wiki/Text_Encoding_Initiative'>.TEI</a> file:</h3>
-<br><br>
-<form action="/narralyzer/characters" method=post enctype=multipart/form-data id="uploadform" style='margin-left: 100px;'>
-  <p>Select 'Browse' to select a file to upload, next press 'Upload' to commence the uploading.<br>
-  <p><input type=file name=file> <input type=submit value=Upload>
-</form>
-<br><br>
+    <div style='float: left; width: 500px'>
+        <h3>Paste your text here and press submit</h3>
+        <br><br>
+        <form action="/narralyzer/chapters" method=get>
+            <textarea rows="4" cols="50" style="margin-left: 100px;" name="raw_text"></textarea><br>
+            <input type=submit value=Submit style="margin-left: 250px;">
+        </form>
+        <h3>Or upload a <a href='https://en.wikipedia.org/wiki/Text_Encoding_Initiative'>.TEI</a> file:</h3>
+        <br><br>
+        <form action="/narralyzer/characters" method=post enctype=multipart/form-data id="uploadform" style='margin-left: 100px;'>
+          <p>Select 'Browse' to select a file to upload, next press 'Upload' to commence the uploading.<br>
+          <p><input type=file name=file> <input type=submit value=Upload>
+        </form>
+    </div>
+
+    <div style='width: 500px; float: left'>
+        <br><br><br>
+        <br><br>
+        Narralyzer will help you quickly analyze the occurrence of and relations between Entities in narrative texts, such as novels, short stories and newspaper articles in four languages. The following aspects of narrative texts are included in the analysis:<br><br>
+        <ul>
+        <li>NER (Named Entity Recognition)</li>
+        <li>Relations between Entities</li>
+        <li>Entity-text extraction (aura of n = 5)</li>
+        </ul>
+        <br>
+        Due to server constrains, this demo only supports Dutch texts, the backend however supports multiple languages.<br><br>
+        See <a href='https://www.github.com/kbresearch/narralyzer'>Github</a> for source code, or go back to the <a href='http://lab.kb.nl'>lab</a>.
+    </div>
+
+</div>
 {% endblock %}

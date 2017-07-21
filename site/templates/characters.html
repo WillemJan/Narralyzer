@@ -3,63 +3,38 @@
    <div sytle='width: 80%; margin: 0 auto;'>
        <h3>Overview of characters</h3>
        That play a mayor role in the narrative.
-   <p>
-     <ul id="todo_list">
-     </ul>
-   </p>
    <form action="/narralyzer/analyze" id="analyze">
    <input type='hidden' name='filename' value="{{ filename }}">
    <input type='hidden' id="characters" name='characters' value='{% for item in characters %}{{item}},{% endfor %}'>
+   <input type='hidden' id="aura" name='aura' value='{{ aura }}'>
    <input type='submit' value='generate images' method=get>
-   <script>
-    function enter_task () {
-        var text = $('#enter_task').val();
-        $('#todo_list').append(
-                '<li>'+ text + ' <input type="submit" class="edit" value="Edit">' + '<input type="submit" class="done delete" value="Delete">' +'</li>');
-    };
-
-    $('#todo_list').on('click', '.edit', function(){
-        $(this).parent().attr('contenteditable','true');
-    });
-
-    $('#todo_list').on('click', '.delete',function(){
-        $(this).parent().remove();
-    });
-
-    $(function() {
-        $('#add').on('click', enter_task);
-    });
-
-    {% for item in sorted_characters %}
-        $('#todo_list').append('<li> {{item}} <input type="submit" class="edit" value="Edit">' + '<input type="submit" class="done delete" value="Delete">' +'</li>');
-    {% endfor %}
-   </script>
    <br><br>
 
-   </form>
    </div>
 <div id="tabs">
   <ul>
    {% for char in characters %}
    <li><a href="#fragment-{{loop.index}}"><span>{{loop.index}}</span></a></li>
    {% endfor %}
-  </ul>
-  {% for char in characters %}
-  <div id="fragment-{{loop.index}}">
+   </ul>
+   {% for char in characters %}
+   <div id="fragment-{{loop.index}}">
+      {% set id1 = loop.index %}
       {% if not char %}
         This chapter does not contain recognized characters.
       {% else %}
-      {% for name in  char %}
-          {{ name }} <br/>
-      {% endfor %}
-
+          {% for name in  char %}
+              <input type=text name="ner_{{id1}}_{{loop.index}}" value="{{ name }}"> <br/>
+          {% endfor %}
       {% endif %}
-  </div>
-  {% endfor %}
+   </div>
+   {% endfor %}
 </div>
+</form>
 
 <script>
 $("#tabs").tabs();
 </script>
+
 
 {% endblock %}

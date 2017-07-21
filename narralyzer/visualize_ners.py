@@ -22,9 +22,7 @@ from graphviz import Digraph
 from pprint import pprint
 
 
-#TODO: grab the output path from narralyzer config
 def analyze(ner_array, dot, filename, source_narrative=['chapter1.txt', 'chapter2.txt', 'chapter3.txt']):
-
     if not ner_array:
         return
 
@@ -45,8 +43,8 @@ def analyze(ner_array, dot, filename, source_narrative=['chapter1.txt', 'chapter
     person_matrix = {}
 
     interaction_scale = 0
-
     prev_item = ner_array[-1]
+
     for item in ner:
         person = item
         person_matrix[person] = {}

@@ -117,11 +117,12 @@ def handle_uploaded_document(uploaded_org_filename, path_uploaded_file):
         text = narralyzer.Language(chapter[1])
         text.parse()
         if not text.error:
-            text.aura()
+            aura = text.aura()
             ner_per_chapter.append(text.result.get('ners'))
 
     return render_template('characters.html',
             characters=ner_per_chapter,
+            aura = aura,
             filename=uploaded_org_filename)
 
 
@@ -202,7 +203,7 @@ def characters():
                     ners = narralyzer.Language(current_chapter)
                     ners.parse()
                     try:
-                        ners.aura()
+                        aura = ners.aura()
                     except:
                         pass
                     try:
@@ -215,7 +216,7 @@ def characters():
             ners.parse()
 
             try:
-                ners.aura()
+                aura = ners.aura()
             except:
                 pass
             try:
@@ -227,32 +228,47 @@ def characters():
             ners.parse()
             try:
                 ner_per_chapter.append(ners.result.get('ners'))
-                ners.aura()
+                aura = ners.aura()
             except:
                 ner_per_chapter.append([])
 
         return render_template('characters.html',
                 characters=ner_per_chapter,
+                aura = aura,
                 filename='Uploaded from file')
 
 
 @application.route('/analyze', methods=['GET', 'POST'])
 def analyze():
     # Combine all characters from all chapters into one long list
+
+    import collections
+
+    val = collections.OrderedDict()
+
+    for item in sorted(request.args):
+        if item.startswith('ner_'):
+            if not int(item.replace('ner_', '').split('_')[0]) in val:
+                val[int(item.replace('ner_', '').split('_')[0])] = collections.OrderedDict()
+            val[int(item.replace('ner_', '').split('_')[0])][int(item.replace('ner_', '').split('_')[1])] = request.args.get(item)
+
     all_characters = []
     name = secure_filename(request.args.get('filename').split('.')[0])
     input_characters = ast.literal_eval(urllib.unquote(request.args.get('characters').decode('utf8')))
+    aura = ast.literal_eval(urllib.unquote(request.args.get('aura').decode('utf8')))
     counter = 1
-    for char in input_characters:
+
+    for char in val:
         characters = []
-        for i in char:
-            all_characters.append(i)
-            characters.append(i)
+        for i in val[char]:
+            if val[char][i].strip():
+                all_characters.append(val[char][i])
+                characters.append(val[char][i])
         visualize_ners.render_chapter(0, name + "_" + str(counter), characters)
         counter += 1
     visualize_ners.render_chapter(0, name + '_all', all_characters)
     rnd = str(random.random())
-    return render_template('analyze.html', rnd=rnd, output=name, counter=counter)
+    return render_template('analyze.html', rnd=rnd, output=name, counter=counter, aura=aura)
 
 
 @application.route('/chapters', methods=['GET', 'POST'])

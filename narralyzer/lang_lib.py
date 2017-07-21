@@ -266,12 +266,10 @@ class Language:
                                 aura[item.get('string')].append(line)
                         current[item.get('string')] = AURA_SIZE / 2
 
-        import json
-        with open("/tmp/out.json", "w") as fh:
-            fh.write(json.dumps(aura))
-
-
-
+        #import json
+        #with open("/tmp/out.json", "w") as fh:
+        #    fh.write(json.dumps(aura))
+        return aura
 
     def _parser(self):
         for count, sentence in enumerate(self.result["sentences"].values()):

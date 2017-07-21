@@ -10,4 +10,15 @@
 <br>
 All chapters as one:<br>
 <img src='static/output/{{ output }}_all.png?{{ rnd }}' width="%100" style='max-width:1000px;'>
+
+<br><br>
+
+{% for name in aura %}
+<hr><br>
+<h2>{{name}}</h2> <br>
+{% for line in aura[name] %}
+    {{line}} <br>
+{% endfor %}
+
+{% endfor %}
 {% endblock %}
