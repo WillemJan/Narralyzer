@@ -111,13 +111,14 @@ def handle_uploaded_document(uploaded_org_filename, path_uploaded_file):
                                    error_msg=error_msg)
 
     ner_per_chapter = []
+    aura = []
 
     for chapter in chapters:
         # Apply narralyzer to text, (the first element is chapter name)
         text = narralyzer.Language(chapter[1])
         text.parse()
         if not text.error:
-            aura = text.aura()
+            aura.append(text.aura())
             ner_per_chapter.append(text.result.get('ners'))
 
     return render_template('characters.html',
@@ -194,6 +195,7 @@ def characters():
 
         all_text = request.args.get('code')
         ner_per_chapter = []
+        aura = []
 
         if chapters and len(chap) >= 1:
             current_chapter = ''
@@ -203,7 +205,7 @@ def characters():
                     ners = narralyzer.Language(current_chapter)
                     ners.parse()
                     try:
-                        aura = ners.aura()
+                        aura.append(ners.aura())
                     except:
                         pass
                     try:
@@ -216,7 +218,7 @@ def characters():
             ners.parse()
 
             try:
-                aura = ners.aura()
+                aura.append(ners.aura())
             except:
                 pass
             try:
@@ -228,7 +230,7 @@ def characters():
             ners.parse()
             try:
                 ner_per_chapter.append(ners.result.get('ners'))
-                aura = ners.aura()
+                aura.append(ners.aura())
             except:
                 ner_per_chapter.append([])
 

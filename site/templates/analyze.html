@@ -13,12 +13,16 @@ All chapters as one:<br>
 
 <br><br>
 
-{% for name in aura %}
+{% for j in aura %}
+<br><h1>Chapter {{ loop.index }}</h1>
+<hr><br><br>
+{% for name in j %}
 <hr><br>
 <h2>{{name}}</h2> <br>
-{% for line in aura[name] %}
+{% for line in j[name] %}
     {{line}} <br>
 {% endfor %}
-
 {% endfor %}
+{% endfor %}
+
 {% endblock %}
