@@ -12,5 +12,5 @@ See https://github.com/KBNLresearch/Narralyzer for source code, demo available h
 
 Language models here:
 
-https://github.com/WillemJan/Narralyzer_languagemodel
-https://github.com/WillemJan/Narralyzer_Dutch_languagemodel
+- https://github.com/WillemJan/Narralyzer_languagemodel
+- https://github.com/WillemJan/Narralyzer_Dutch_languagemodel
