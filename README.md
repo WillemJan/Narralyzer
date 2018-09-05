@@ -9,3 +9,8 @@ The backend library also does POS tagging and sentiment analysis, however this i
 
 
 See https://github.com/KBNLresearch/Narralyzer for source code, demo available here: https://kbresearch.nl/narralyzer/
+
+Language models here:
+
+https://github.com/WillemJan/Narralyzer_languagemodel
+https://github.com/WillemJan/Narralyzer_Dutch_languagemodel
